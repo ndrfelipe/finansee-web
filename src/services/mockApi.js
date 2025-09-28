@@ -84,10 +84,20 @@ export const getCategoriesMock = async () => {
 };
 
 export const createCategoryMock = async (newCategory) => {
-    await delay(300);
-    const categoryWithId = { ...newCategory, id: nextCategoryId++ };
-    MOCK_CATEGORIES.push(categoryWithId);
-    return categoryWithId;
+  await delay(300);
+
+  const nameLower = newCategory.name.trim().toLowerCase();
+  const alreadyExists = MOCK_CATEGORIES.some(cat =>
+    cat.name.trim().toLowerCase() === nameLower
+  );
+
+  if (alreadyExists) {
+    throw new Error("Já existe uma categoria com esse nome.");
+  }
+
+  const categoryWithId = { ...newCategory, id: nextCategoryId++ };
+  MOCK_CATEGORIES.push(categoryWithId);
+  return categoryWithId;
 };
 
 export const updateCategoryMock = async (updatedCategory) => {

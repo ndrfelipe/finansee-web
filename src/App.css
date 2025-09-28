@@ -670,20 +670,6 @@ label {
     margin-top: 0; 
 }
 
-.delete-button {
-    background-color: transparent;
-    color: var(--danger-red); 
-    border: 2px solid var(--danger-red);
-    
-    margin-top: 15px; 
-}
-
-.delete-button:hover {
-    background-color: var(--danger-red); 
-    color: white; 
-    border-color: var(--danger-red);
-}
-
 /* ====================================================================== */
 /* === 9. NOTIFICAÇÕES ================================================== */
 /* ====================================================================== */
