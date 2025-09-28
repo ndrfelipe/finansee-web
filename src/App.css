@@ -1,38 +1,163 @@
-.App {
-  text-align: center;
+/* src/App.css */
+
+/* --- Variáveis e Reset Básico --- */
+:root {
+    /* Cores do seu layout */
+    --color-background-dark: #1e1e1e; 
+    --color-sidebar: #282c34;         
+    --color-content-bg: #f4f5f8;      
+    
+    /* Cores de Texto e Interação */
+    --color-text-dark: #20232a;
+    --color-text-light: #ffffff;
+    --color-primary-blue: #007bff;   
+    --color-active-link: #dbe4ff;
+    --color-active-bg: #4c546b;      
+    --color-success: #28a745;        
+    --color-danger: #dc3545;         
+    --color-light-gray: #e0e0e0;     
+    --color-text-link: #aeb1b6;      
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+body {
+    background-color: var(--color-background-dark);
+    color: var(--color-text-light);
+    margin: 0;
+    font-family: sans-serif;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* --- Layout Principal (Sidebar + Conteúdo) --- */
+.dashboard-layout {
+    display: flex; 
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+/* --- Sidebar (Barra Lateral) --- */
+.sidebar {
+    width: 250px; 
+    background-color: var(--color-sidebar);
+    padding: 20px 0;
+    color: var(--color-text-light);
+    min-height: 100vh;
 }
 
-.App-link {
-  color: #61dafb;
+.sidebar .new-transaction {
+    background-color: var(--color-primary-blue);
+    color: var(--color-text-light);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: calc(100% - 40px);
+    justify-content: center;
+    margin: 0 20px 30px 20px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.sidebar .menu {
+    display: flex;
+    flex-direction: column;
 }
+
+.sidebar .menu a {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: var(--color-text-link);
+    text-decoration: none;
+    border-radius: 6px;
+    margin: 2px 20px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.sidebar .menu a:hover {
+    background-color: #3d424b;
+}
+
+.sidebar .menu a.active {
+    background-color: var(--color-active-bg); 
+    color: var(--color-active-link);
+    font-weight: bold;
+}
+
+
+/* --- Área de Conteúdo Principal --- */
+.main-content {
+    flex-grow: 1; 
+    background-color: var(--color-content-bg);
+    color: var(--color-text-dark);
+    padding: 40px;
+    border-radius: 20px 0 0 20px; 
+    margin-left: 10px; 
+}
+
+.main-content h1 {
+    color: #1a4d8c; 
+    margin-top: 0;
+    margin-bottom: 30px;
+    font-size: 28px;
+}
+
+/* --- Filtros --- */
+.filters {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.filters input {
+    width: 300px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.filters .actions button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+/* --- Lista de Transações --- */
+.transaction-list {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+    min-height: 200px; /* altura mínima para visualização */
+}
+
+/* --- Cards de Resumo --- */
+.summary {
+    display: flex;
+    gap: 20px;
+}
+
+.summary-card {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    flex-grow: 1;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.summary-card p {
+    margin: 0;
+    color: #888;
+}
+
+.summary-card h3 {
+    margin: 5px 0 0 0;
+    font-size: 24px;
+}
+
+.summary-card.saldo h3 { color: var(--color-primary-blue); }
+.summary-card.receita h3 { color: var(--color-success); }
+.summary-card.despesa h3 { color: var(--color-danger); }
