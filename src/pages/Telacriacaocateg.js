@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { FaTimes, FaArrowLeft } from 'react-icons/fa';
-// Importando useNavigate e useParams para lidar com as rotas
-import { useNavigate, useParams } from 'react-router-dom';
 
 const COLOR_OPTIONS = [
     '#FF6347', '#4682B4', '#3CB371', '#9370DB', 
@@ -11,18 +9,7 @@ const COLOR_OPTIONS = [
     '#FF4500', '#483D8B', '#228B22', '#D2B48C'
 ];
 
-// MOCK DE CATEGORIAS (TEMPORÁRIO, DEVERIA VIR DE UM CONTEXTO/REDUX)
-const MOCK_CATEGORIES = [
-    { id: 'c1', name: 'Alimentação', color: '#FF6347', type: 'despesa' },
-    { id: 'c2', name: 'Salário', color: '#3CB371', type: 'receita' },
-    { id: 'c3', name: 'Transporte', color: '#4682B4', type: 'despesa' },
-];
-
-// Removendo props complexas, usando navegação e mock para simplificar
-const Telacriacaocateg = () => {
-    const navigate = useNavigate();
-    const { id } = useParams(); // Pega o ID da rota /editar-categoria/:id
-    
+const Telacriacaocateg = ({ categoryToEdit, onClose, onBackToCategories, onSaveSuccess }) => {
     const [formData, setFormData] = useState({
         id: null,
         name: '',
@@ -32,16 +19,10 @@ const Telacriacaocateg = () => {
     const [isEditing, setIsEditing] = useState(false);
     
     useEffect(() => {
-        // Se houver um ID na URL, estamos em modo de EDIÇÃO
-        if (id) {
-            const category = MOCK_CATEGORIES.find(c => c.id === id); // Simula busca
-            if (category) {
-                setFormData(category);
-                setIsEditing(true);
-            } else {
-                // Categoria não encontrada, volta para a lista
-                navigate('/categorias'); 
-            }
+        // Carrega todos os dados, INCLUINDO O ID, se estiver editando
+        if (categoryToEdit && categoryToEdit.id) {
+            setFormData(categoryToEdit);
+            setIsEditing(true);
         } else {
             // Modo Criação
             setIsEditing(false);
@@ -52,7 +33,7 @@ const Telacriacaocateg = () => {
                 type: 'despesa'
             });
         }
-    }, [id, navigate]);
+    }, [categoryToEdit]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -61,11 +42,8 @@ const Telacriacaocateg = () => {
     
     const handleSave = (e) => {
         e.preventDefault();
-        // **Atenção:** Em uma aplicação real, aqui você faria a chamada à API para salvar/atualizar.
-        
-        console.log(`Salvando/Atualizando categoria: ${isEditing ? 'ID ' + formData.id : 'Nova'}`);
-        // Após salvar, volta para a lista de categorias
-        navigate('/categorias');
+        // Chama a função no componente pai com os dados, o ID é fundamental aqui para o UPDATE
+        onSaveSuccess(formData); 
     };
 
     const isLightColor = (hex) => {
@@ -77,17 +55,13 @@ const Telacriacaocateg = () => {
         return luminance > 0.65;
     };
 
-    // Funções de navegação simplificadas
-    const handleClose = () => navigate('/categorias'); 
-    const handleBackToCategories = () => navigate('/categorias');
-
     return (
         <div className="form-modal-overlay">
             <div className="form-card category-details-modal">
                 <div className="modal-header">
-                    <FaArrowLeft className="icon-back" onClick={handleBackToCategories} /> 
+                    <FaArrowLeft className="icon-back" onClick={onBackToCategories} /> 
                     <h2>{isEditing ? "Editar Categoria" : "Criar Categoria"}</h2>
-                    <FaTimes className="icon-close" onClick={handleClose} />
+                    <FaTimes className="icon-close" onClick={onClose} />
                 </div>
 
                 <form onSubmit={handleSave}>
@@ -95,9 +69,9 @@ const Telacriacaocateg = () => {
                     <div 
                         className="category-preview"
                         style={{ 
-                            backgroundColor: formData.color, 
-                            color: isLightColor(formData.color) ? '#333' : 'white'
-                        }}
+                                backgroundColor: formData.color, 
+                                color: isLightColor(formData.color) ? '#333' : 'white'
+                               }}
                     >
                         {formData.name || (isEditing ? 'Visualização' : 'Nome da Categoria')}
                     </div>
@@ -114,7 +88,7 @@ const Telacriacaocateg = () => {
                         required
                     />
 
-                    {/* SELEÇÃO DE TIPO */}
+                    {/* SELEÇÃO DE TIPO (Com classes de design aprimorado) */}
                     <label>Tipo</label>
                     <div className="type-toggle-group">
                         <button 
@@ -146,7 +120,7 @@ const Telacriacaocateg = () => {
                         ))}
                     </div>
                     
-                    {/* BOTÃO SALVAR */}
+                    {/* BOTÃO SALVAR (Com classe de design aprimorado) */}
                     <button type="submit" className="create-button category-save-button">
                         {isEditing ? "Salvar Edição" : "Criar Categoria"}
                     </button>
