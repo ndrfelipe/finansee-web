@@ -1,100 +1,149 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+// src/pages/Telacriacaodesp.js
 
-function Telacriacaodesp() {
-  // Estados para cada campo do formulário
-  const [valor, setValor] = useState('');
-  const [paga, setPaga] = useState(true); // Mudamos de 'recebida' para 'paga'
-  const [data, setData] = useState('hoje');
-  const [descricao, setDescricao] = useState('');
-  const [categoria, setCategoria] = useState('');
+import React, { useState, useEffect } from 'react'; 
+import { FaTimes } from 'react-icons/fa'; 
+import { createTransaction, updateTransaction } from '../services/mockApi'; 
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Lógica para salvar a despesa virá aqui
-    console.log({ valor, paga, data, descricao, categoria });
-  };
+const Telacriacaodesp = ({ transactionToEdit, onClose, onSaveSuccess, categories = [] }) => {
+    
+    const [formData, setFormData] = useState({
+        id: null,
+        valor: '',
+        date: new Date().toISOString().split('T')[0],
+        description: '',
+        category: '',
+        account: 'Nubank',
+        tipoPagamento: 'pix',
+        tipo: 'despesa'
+    });
+    
+    const [loading, setLoading] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
 
-  return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <form onSubmit={handleSubmit}>
-          <h2>Nova Despesa</h2> {/* Título alterado */}
+    useEffect(() => {
+        if (transactionToEdit) {
+            setFormData({
+                id: transactionToEdit.id,
+                valor: Math.abs(transactionToEdit.valor).toFixed(2), 
+                date: transactionToEdit.date, 
+                description: transactionToEdit.description,
+                category: transactionToEdit.category,
+                account: transactionToEdit.account,
+                tipoPagamento: transactionToEdit.tipoPagamento,
+                tipo: 'despesa'
+            });
+            setIsEditing(true);
+        } else {
+            setIsEditing(false);
+        }
+    }, [transactionToEdit]);
 
-          <div className="form-group-valor">
-            <span>$</span>
-            <input
-              type="number"
-              placeholder="R$ 0,00"
-              value={valor}
-              onChange={(e) => setValor(e.target.value)}
-              required
-            />
-            <span className="currency">BRL</span>
-          </div>
 
-          <div className="form-group-toggle">
-            <label>Foi paga</label> {/* Label alterada */}
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={paga}
-                onChange={() => setPaga(!paga)}
-              />
-              <span className="slider round"></span>
-            </label>
-          </div>
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
 
-          <div className="form-group-date">
-            <button
-              type="button"
-              className={data === 'hoje' ? 'active' : ''}
-              onClick={() => setData('hoje')}
-            >
-              Hoje
-            </button>
-            <button
-              type="button"
-              className={data === 'ontem' ? 'active' : ''}
-              onClick={() => setData('ontem')}
-            >
-              Ontem
-            </button>
-            <button
-              type="button"
-              className={data === 'outros' ? 'active' : ''}
-              onClick={() => setData('outros')}
-            >
-              Outros
-            </button>
-          </div>
+    const handleSave = async (e) => {
+        e.preventDefault();
+        setLoading(true);
 
-          <div className="form-group">
-            <label>Descrição</label>
-            <input
-              type="text"
-              value={descricao}
-              onChange={(e) => setDescricao(e.target.value)}
-            />
-          </div>
+        const dataToSave = { ...formData, valor: parseFloat(formData.valor) };
 
-          <div className="form-group">
-            <label>Categoria</label>
-            <input
-              type="text"
-              value={categoria}
-              onChange={(e) => setCategoria(e.target.value)}
-            />
-          </div>
+        try {
+            if (isEditing) {
+                await updateTransaction(formData.id, dataToSave);
+            } else {
+                await createTransaction(dataToSave);
+            }
+            onSaveSuccess(); 
+            onClose(); 
+        } catch (error) {
+            console.error("Erro ao salvar despesa:", error);
+            alert(`Erro: ${error.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    // Filtra categorias para mostrar apenas as de Despesa
+    const expenseCategories = categories.filter(cat => cat.type === 'despesa');
 
-          <div className="form-actions">
-            <Link to="/transacoes" className="cancel-button">Cancelar</Link>
-            <button type="submit" className="submit-button">Criar</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
+
+    return (
+        <div className="form-modal-overlay">
+            <div className="form-card transaction-modal">
+                <div className="modal-header">
+                    <h2>{isEditing ? "Editar Despesa" : "Nova Despesa"}</h2>
+                    <FaTimes className="icon-close" onClick={onClose} />
+                </div>
+                
+                <form onSubmit={handleSave}>
+                    {/* Campo de Valor */}
+                    <label>Valor</label>
+                    <div className="input-group">
+                        <span className="currency-symbol">R$</span>
+                        <input
+                            type="number"
+                            name="valor"
+                            value={formData.valor}
+                            onChange={handleChange}
+                            placeholder="0.00"
+                            step="0.01"
+                            required
+                            className="styled-input"
+                        />
+                    </div>
+                    
+                    {/* Campo de Data */}
+                    <label>Data</label>
+                    <input 
+                        type="date"
+                        name="date"
+                        value={formData.date}
+                        onChange={handleChange}
+                        required
+                        className="styled-input"
+                    />
+
+                    {/* Campo de Descrição */}
+                    <label>Descrição</label>
+                    <input 
+                        type="text"
+                        name="description"
+                        value={formData.description}
+                        onChange={handleChange}
+                        placeholder="Ex: Conta de luz, Supermercado"
+                        required
+                        className="styled-input"
+                    />
+                    
+                    {/* CAMPO DE CATEGORIA REFORMULADO (Dropdown/Select) */}
+                    <label>Categoria</label>
+                    <select
+                        name="category"
+                        value={formData.category}
+                        onChange={handleChange}
+                        className="styled-select" 
+                        required
+                        disabled={loading}
+                    >
+                        <option value="" disabled>Selecione uma categoria...</option>
+                        {expenseCategories.map((cat) => (
+                            <option key={cat.id} value={cat.name}>
+                                {cat.name}
+                            </option>
+                        ))}
+                    </select>
+
+                    {/* Botão Salvar/Editar (Com classe de design aprimorado) */}
+                    <button type="submit" className="create-button" disabled={loading}>
+                        {loading ? "Salvando..." : (isEditing ? "Editar" : "Criar")}
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
 
 export default Telacriacaodesp;

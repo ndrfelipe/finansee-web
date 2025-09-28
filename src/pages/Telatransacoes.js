@@ -1,133 +1,234 @@
-import React, { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
-import Telacriacaorecei from "./Telacriacaoreceita";
-import Telacriacaodesp from "./Telacriacaodesp";
-import Telacriacaocateg from "./Telacriacaocateg";
-import Telaexcluirdr from "./Telaexcluirdr";
+// src/pages/Telatransacoes.js
 
-function Telatransacoes() {
-  const [transactions, setTransactions] = useState([
-    { id: 1, type: 'despesa', situation: 'pendente', date: '08/09/2025', description: 'Alimentação', category: 'Alimentação', conta: 'Nubank', value: 410.90 },
-    { id: 2, type: 'despesa', situation: 'pago', date: '08/09/2025', description: 'Alimentação', category: 'Alimentação', conta: 'Nubank', value: 15.90 },
-    { id: 3, type: 'receita', situation: 'recebido', date: '08/09/2025', description: 'Renda extra', category: 'Renda extra', conta: 'Carteira', value: 500.00 },
-  ]);
+import React, { useState, useEffect, useMemo } from 'react';
+import Sidebar from '../components/Sidebar';
+import SummaryCards from '../components/SummaryCards';
+import MonthSelector from '../components/MonthSelector';
+import TransactionList from '../components/TransactionList';
+import Telacriacaodesp from './Telacriacaodesp'; 
+import Telacriacaoreceita from './Telacriacaoreceita'; 
+import Telacategoria from './Telacategoria'; 
+import Telacriacaocateg from './Telacriacaocateg'; 
+import { 
+    deleteTransaction, 
+    getTransactions, 
+    getCategoriesMock, 
+    updateCategoryMock, 
+    createCategoryMock 
+} from '../services/mockApi'; 
 
-  const [showReceitaModal, setShowReceitaModal] = useState(false);
-  const [showDespesaModal, setShowDespesaModal] = useState(false);
-  const [showCategoriaModal, setShowCategoriaModal] = useState(false);
-  const [notification, setNotification] = useState('');
-  const [transactionToDelete, setTransactionToDelete] = useState(null);
+const Telatransacoes = () => {
+    // ESTADOS PRINCIPAIS
+    const [transactions, setTransactions] = useState([]);
+    const [categories, setCategories] = useState([]); // Lista completa de categorias
+    const [loading, setLoading] = useState(true);
+    const [notification, setNotification] = useState(null);
+    const [modalType, setModalType] = useState(null); 
+    
+    // ESTADOS DE EDIÇÃO E NAVEGAÇÃO
+    const [transactionToEdit, setTransactionToEdit] = useState(null); 
+    const [categoryToEdit, setCategoryToEdit] = useState(null); 
+    const [showCategoryDetails, setShowCategoryDetails] = useState(false); // Controla se Telacriacaocateg está visível
+    const [currentPage] = useState('transacoes');
+    const [currentMonth, setCurrentMonth] = useState('Setembro 2025');
 
-  // --- LÓGICA DO DROPDOWN RESTAURADA ---
-  const [isDropdownOpen, setDropdownOpen] = useState(false);
-  const toggleDropdown = () => setDropdownOpen(!isDropdownOpen);
-  // ------------------------------------
+    // --- FUNÇÕES DE CARREGAMENTO ---
 
-  useEffect(() => {
-    if (notification) {
-      const timer = setTimeout(() => { setNotification(''); }, 3000);
-      return () => clearTimeout(timer);
+    const fetchCategories = async () => {
+        try {
+            const data = await getCategoriesMock(); 
+            setCategories(data);
+        } catch (err) {
+            console.error("Falha ao carregar categorias:", err);
+            setNotification({ type: 'error', message: 'Falha ao carregar as categorias.' });
+        }
     }
-  }, [notification]);
+    
+    const fetchData = async () => {
+        setLoading(true); 
+        try { 
+            const data = await getTransactions(); 
+            setTransactions(data); 
+        } catch (err) { 
+            setNotification({ type: 'error', message: 'Falha ao carregar as transações.' }); 
+        } finally { 
+            setLoading(false); 
+        } 
+    };
 
-  const addTransaction = (transaction) => {
-    const newTransaction = { ...transaction, id: Date.now() };
-    setTransactions(prev => [newTransaction, ...prev]);
-    setNotification(`Nova ${transaction.type} adicionada com sucesso!`);
-  };
+    useEffect(() => {
+        fetchData();
+        fetchCategories();
+    }, []);
 
-  const deleteTransaction = () => {
-    if (transactionToDelete) {
-      setTransactions(transactions.filter(t => t.id !== transactionToDelete));
-      setNotification('Transação excluída com sucesso!');
-      setTransactionToDelete(null);
-    }
-  };
+    // --- MEMORIZAÇÃO E CÁLCULOS ---
+    
+    const { receitas, despesas, saldoAtual } = useMemo(() => {
+        const totalReceitas = transactions.filter(t => t.valor > 0).reduce((sum, t) => sum + t.valor, 0);
+        const totalDespesas = transactions.filter(t => t.valor < 0).reduce((sum, t) => sum + Math.abs(t.valor), 0);
+        const saldo = totalReceitas - totalDespesas;
+        return { receitas: totalReceitas, despesas: totalDespesas, saldoAtual: saldo };
+    }, [transactions]);
+    
+    // Cria o MAPA de Cores (para o TransactionList)
+    const categoryColors = useMemo(() => {
+        return categories.reduce((acc, cat) => {
+            acc[cat.name] = cat.color;
+            return acc;
+        }, {});
+    }, [categories]);
 
-  return (
-    <>
-      <div className="dashboard-layout">
-        <aside className="sidebar">
-          {/* --- BOTÃO "NOVA" COM DROPDOWN --- */}
-          <div className="new-transaction-container">
-            <button className="new-transaction" onClick={toggleDropdown}>
-              Nova
-            </button>
-            {isDropdownOpen && (
-              <div className="new-transaction-dropdown">
-                <button onClick={() => { setShowReceitaModal(true); setDropdownOpen(false); }}>+ Receita</button>
-                <button onClick={() => { setShowDespesaModal(true); setDropdownOpen(false); }}>+ Despesa</button>
-                <button onClick={() => { setShowCategoriaModal(true); setDropdownOpen(false); }}>+ Categoria</button>
-              </div>
-            )}
-          </div>
-          {/* ------------------------------------ */}
-          <nav className="menu">
-            <NavLink to="/dashboard">📊 Dashboard</NavLink>
-            <NavLink to="/transacoes">💰 Transações</NavLink>
-            <NavLink to="/categorias">🏷️ Categorias</NavLink>
-            <NavLink to="/relatorios">📑 Relatório</NavLink>
-          </nav>
-        </aside>
+    // --- HANDLERS ---
+    
+    const handleNewTransaction = (type) => { 
+        setTransactionToEdit(null); 
+        setCategoryToEdit(null); 
+        setShowCategoryDetails(false); 
+        if (type === 'despesa' || type === 'receita') { 
+            setModalType(type); 
+        } else if (type === 'categoria') { 
+            setModalType('categoria'); 
+        } 
+    };
+    
+    const handleEdit = (transaction) => { 
+        setTransactionToEdit(transaction); 
+        setModalType(transaction.valor < 0 ? 'despesa' : 'receita'); 
+    };
 
-        <main className="main-content-split">
-          <div className="content-left">
-            <div className="main-header">
-              <h1>Transações</h1>
-              <div className="header-actions">
-                <button className="icon-button">🔍</button>
-                <button className="icon-button">🔽</button>
-                <button className="icon-button">⋮</button>
-              </div>
-            </div>
-            <div className="month-selector">
-              <button className="arrow-button">‹</button>
-              <span>Setembro 2025</span>
-              <button className="arrow-button">›</button>
-            </div>
-            <div className="transaction-list">
-              <div className="transaction-list-header-full">
-                <span>Situação</span>
-                <span>Data</span>
-                <span>Descrição</span>
-                <span>Categoria</span>
-                <span>Conta</span>
-                <span className="valor-header">Valor</span>
-                <span>Ações</span>
-              </div>
-              {transactions.map(t => (
-                <div key={t.id} className={`transaction-item-full ${t.type}`}>
-                  <span className="status-cell">
-                    <span className={`status-icon ${t.situation === 'pago' || t.situation === 'recebido' ? 'success' : 'pending'}`}>
-                      {t.situation === 'pago' || t.situation === 'recebido' ? '✅' : '❗'}
-                    </span>
-                  </span>
-                  <span>{t.date}</span>
-                  <span>{t.description}</span>
-                  <span>{t.category}</span>
-                  <span>{t.conta}</span>
-                  <span className="valor">{t.type === 'receita' ? `R$ ${t.value.toFixed(2)}` : `- R$ ${t.value.toFixed(2)}`}</span>
-                  <span className="actions-cell">
-                    <button className="action-icon-button">✏️</button>
-                    <button onClick={() => setTransactionToDelete(t.id)} className="action-icon-button delete-button">🗑️</button>
-                  </span>
+    const handleDelete = async (transaction) => { 
+        if (window.confirm(`Tem certeza que deseja excluir a transação de R$${Math.abs(transaction.valor).toFixed(2).replace('.', ',')} - "${transaction.description}"?`)) { 
+            try { 
+                await deleteTransaction(transaction.id); 
+                setNotification({ type: 'success', message: 'Transação excluída com sucesso!' }); 
+                fetchData(); 
+            } catch (error) { 
+                setNotification({ type: 'error', message: error.message || 'Falha ao excluir a transação.' }); 
+            } 
+        } 
+    };
+
+    const handleCloseModal = () => { 
+        setModalType(null); 
+        setTransactionToEdit(null); 
+        setCategoryToEdit(null); // CRUCIAL: Limpa o ID da categoria em edição
+        setShowCategoryDetails(false); 
+    };
+
+    // Inicia o fluxo de edição de uma categoria existente
+    const handleEditCategory = (category) => { 
+        setCategoryToEdit(category); // Define o objeto da categoria para edição
+        setShowCategoryDetails(true); // Abre o Telacriacaocateg no modo edição
+    };
+    
+    // Inicia o fluxo de criação de uma nova categoria
+    const handleCreateNewCategory = () => { 
+        setCategoryToEdit(null); // Garante que o modo seja de Criação
+        setShowCategoryDetails(true); 
+    };
+
+    // Lógica para salvar/atualizar categoria (CORRIGE O ERRO DE UPDATE)
+    const handleSaveCategorySuccess = async (savedCategory) => {
+        setNotification(null);
+        try {
+            if (savedCategory.id) {
+                await updateCategoryMock(savedCategory);
+            } else {
+                await createCategoryMock(savedCategory);
+            }
+            
+            await fetchCategories(); // Recarrega a lista
+            
+            // LIMPEZA DE ESTADOS APÓS SUCESSO: ESSENCIAL PARA PREVENIR ERROS DE FLUXO
+            setCategoryToEdit(null); 
+            setShowCategoryDetails(false); // Volta para a lista de categorias (Telacategoria)
+
+            setNotification({ type: 'success', message: `Categoria "${savedCategory.name}" salva com sucesso!` });
+        } catch (error) {
+            console.error("Erro na API ao salvar categoria:", error);
+            // Se der erro, a notificação aparece e o modal fica aberto para correção
+            setNotification({ type: 'error', message: `Erro ao salvar categoria: ${error.message}` });
+        }
+    };
+
+    if (loading) return <div className="loading-spinner">Carregando transações...</div>;
+
+    // --- RENDERIZAÇÃO ---
+    return (
+        <div className="page-layout">
+            <Sidebar 
+                activePage={currentPage} 
+                onNavigate={() => {}} 
+                onNewTransaction={handleNewTransaction} 
+            />
+            
+            <div className="main-content-area">
+                
+                {notification && (<div className={`notification notification-${notification.type}`}>{notification.message}</div>)}
+                
+                {/* 1. Modal de Criação/Edição de Receita/Despesa */}
+                {(modalType === 'despesa' || modalType === 'receita') && (
+                    modalType === 'despesa' ? 
+                        <Telacriacaodesp 
+                            transactionToEdit={transactionToEdit} 
+                            onClose={handleCloseModal} 
+                            onSaveSuccess={fetchData} 
+                            categories={categories} // Lista para dropdown
+                        /> 
+                        :
+                        <Telacriacaoreceita 
+                            transactionToEdit={transactionToEdit} 
+                            onClose={handleCloseModal} 
+                            onSaveSuccess={fetchData} 
+                            categories={categories} // Lista para dropdown
+                        /> 
+                )}
+                
+                {/* 2. Modal Lista de Categorias (Telacategoria) */}
+                {modalType === 'categoria' && !showCategoryDetails && (
+                    <Telacategoria 
+                        onClose={handleCloseModal} 
+                        onEditCategory={handleEditCategory}
+                        onCreateNewCategory={handleCreateNewCategory}
+                        categories={categories} 
+                    />
+                )}
+                
+                {/* 3. Sub-Modal de Criação/Edição de Detalhes da Categoria (Telacriacaocateg) */}
+                {modalType === 'categoria' && showCategoryDetails && (
+                    <Telacriacaocateg
+                        categoryToEdit={categoryToEdit} // Objeto de edição ou null
+                        onClose={handleCloseModal}
+                        onBackToCategories={() => { setCategoryToEdit(null); setShowCategoryDetails(false); }} // Limpa e volta
+                        onSaveSuccess={handleSaveCategorySuccess} 
+                    />
+                )}
+                
+                <div className="transactions-header-section">
+                    <h1>Transações</h1>
+                    <div className="table-wrapper-card">
+                        <MonthSelector 
+                            currentMonth={currentMonth} 
+                            onPrevious={() => setCurrentMonth('Agosto 2025')} 
+                            onNext={() => setCurrentMonth('Outubro 2025')} 
+                        />
+                        <TransactionList 
+                            transactions={transactions} 
+                            onDelete={handleDelete} 
+                            onEdit={handleEdit} 
+                            categoryColors={categoryColors} // Mapa de cores para tags
+                        />
+                    </div>
                 </div>
-              ))}
-            </div>
-          </div>
-          <div className="content-right">
-            {/* ... seus cards de resumo ... */}
-          </div>
-        </main>
-      </div>
 
-      {showReceitaModal && <Telacriacaorecei addTransaction={addTransaction} onClose={() => setShowReceitaModal(false)} />}
-      {showDespesaModal && <Telacriacaodesp addTransaction={addTransaction} onClose={() => setShowDespesaModal(false)} />}
-      {showCategoriaModal && <Telacriacaocateg onClose={() => setShowCategoriaModal(false)} />}
-      {transactionToDelete && <Telaexcluirdr onConfirm={deleteTransaction} onCancel={() => setTransactionToDelete(null)} />}
-      {notification && <div className="notification success toast">{notification}</div>}
-    </>
-  );
-}
+                <SummaryCards 
+                    saldoAtual={saldoAtual}
+                    receitas={receitas}
+                    despesas={despesas}
+                />
+            </div>
+        </div>
+    );
+};
 
 export default Telatransacoes;
