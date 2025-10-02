@@ -39,7 +39,7 @@ Aqui você vai encontrar as histórias de usuário que estão em andamento, o sc
 
 - **Histórias de Usuário Concluídas [Quadro Trello]**
  
-  ![image](https://github.com/user-attachments/assets/44906aa5-d1cf-4082-9e79-7f368eb83ee0)
+  <img width="277" height="356" alt="image" src="https://github.com/user-attachments/assets/11ae0459-ea83-44d8-8406-0a2b28da53bb" />
 
 - **Screencast do Site**  
   https://youtu.be/Ioc8XCc-cv0
