@@ -15,7 +15,7 @@
 
 ---
 
-### Sessão Entrega 2
+### Sessão Entrega 1
 
 Aqui você pode encontrar a documentação e os protótipos da nossa primeira entrega.
 
@@ -32,7 +32,7 @@ Aqui você pode encontrar a documentação e os protótipos da nossa primeira en
   [finansee](https://github.com/Leticia-Gabs/finansee.git)
 --- 
 
-### Sessão Entrega 3
+### Sessão Entrega 2
 
 Aqui você vai encontrar as histórias de usuário que estão em andamento, o screencast do site e o issue/bug tracker.
 
