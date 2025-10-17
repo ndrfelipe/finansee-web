@@ -1,6 +1,7 @@
 // src/pages/Telatransacoes.js
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import SummaryCards from '../components/SummaryCards';
 import MonthSelector from '../components/MonthSelector';
@@ -18,9 +19,11 @@ import {
 } from '../services/mockApi'; 
 
 const Telatransacoes = () => {
+    const navigate = useNavigate();
+
     // ESTADOS PRINCIPAIS
     const [transactions, setTransactions] = useState([]);
-    const [categories, setCategories] = useState([]); // Lista completa de categorias
+    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [notification, setNotification] = useState(null);
     const [modalType, setModalType] = useState(null); 
@@ -28,12 +31,31 @@ const Telatransacoes = () => {
     // ESTADOS DE EDIÇÃO E NAVEGAÇÃO
     const [transactionToEdit, setTransactionToEdit] = useState(null); 
     const [categoryToEdit, setCategoryToEdit] = useState(null); 
-    const [showCategoryDetails, setShowCategoryDetails] = useState(false); // Controla se Telacriacaocateg está visível
+    const [showCategoryDetails, setShowCategoryDetails] = useState(false);
     const [currentPage] = useState('transacoes');
     const [currentMonth, setCurrentMonth] = useState('Setembro 2025');
 
-    // --- FUNÇÕES DE CARREGAMENTO ---
+    // --- FUNÇÕES DE NAVEGAÇÃO ---
+    const handleNavigate = (key) => {
+        switch (key) {
+            case 'dashboard':
+                navigate('/dashboard');
+                break;
+            case 'transacoes':
+                navigate('/');
+                break;
+            case 'categorias-list':
+                navigate('/categorias');
+                break;
+            case 'relatorio':
+                navigate('/relatorios');
+                break;
+            default:
+                break;
+        }
+    };
 
+    // --- FUNÇÕES DE CARREGAMENTO ---
     const fetchCategories = async () => {
         try {
             const data = await getCategoriesMock(); 
@@ -42,7 +64,7 @@ const Telatransacoes = () => {
             console.error("Falha ao carregar categorias:", err);
             setNotification({ type: 'error', message: 'Falha ao carregar as categorias.' });
         }
-    }
+    };
     
     const fetchData = async () => {
         setLoading(true); 
@@ -62,7 +84,6 @@ const Telatransacoes = () => {
     }, []);
 
     // --- MEMORIZAÇÃO E CÁLCULOS ---
-    
     const { receitas, despesas, saldoAtual } = useMemo(() => {
         const totalReceitas = transactions.filter(t => t.valor > 0).reduce((sum, t) => sum + t.valor, 0);
         const totalDespesas = transactions.filter(t => t.valor < 0).reduce((sum, t) => sum + Math.abs(t.valor), 0);
@@ -70,7 +91,6 @@ const Telatransacoes = () => {
         return { receitas: totalReceitas, despesas: totalDespesas, saldoAtual: saldo };
     }, [transactions]);
     
-    // Cria o MAPA de Cores (para o TransactionList)
     const categoryColors = useMemo(() => {
         return categories.reduce((acc, cat) => {
             acc[cat.name] = cat.color;
@@ -79,7 +99,6 @@ const Telatransacoes = () => {
     }, [categories]);
 
     // --- HANDLERS ---
-    
     const handleNewTransaction = (type) => { 
         setTransactionToEdit(null); 
         setCategoryToEdit(null); 
@@ -111,23 +130,20 @@ const Telatransacoes = () => {
     const handleCloseModal = () => { 
         setModalType(null); 
         setTransactionToEdit(null); 
-        setCategoryToEdit(null); // CRUCIAL: Limpa o ID da categoria em edição
+        setCategoryToEdit(null); 
         setShowCategoryDetails(false); 
     };
 
-    // Inicia o fluxo de edição de uma categoria existente
     const handleEditCategory = (category) => { 
-        setCategoryToEdit(category); // Define o objeto da categoria para edição
-        setShowCategoryDetails(true); // Abre o Telacriacaocateg no modo edição
+        setCategoryToEdit(category); 
+        setShowCategoryDetails(true); 
     };
     
-    // Inicia o fluxo de criação de uma nova categoria
     const handleCreateNewCategory = () => { 
-        setCategoryToEdit(null); // Garante que o modo seja de Criação
+        setCategoryToEdit(null); 
         setShowCategoryDetails(true); 
     };
 
-    // Lógica para salvar/atualizar categoria (CORRIGE O ERRO DE UPDATE)
     const handleSaveCategorySuccess = async (savedCategory) => {
         setNotification(null);
         try {
@@ -136,17 +152,12 @@ const Telatransacoes = () => {
             } else {
                 await createCategoryMock(savedCategory);
             }
-            
-            await fetchCategories(); // Recarrega a lista
-            
-            // LIMPEZA DE ESTADOS APÓS SUCESSO: ESSENCIAL PARA PREVENIR ERROS DE FLUXO
+            await fetchCategories();
             setCategoryToEdit(null); 
-            setShowCategoryDetails(false); // Volta para a lista de categorias (Telacategoria)
-
+            setShowCategoryDetails(false);
             setNotification({ type: 'success', message: `Categoria "${savedCategory.name}" salva com sucesso!` });
         } catch (error) {
             console.error("Erro na API ao salvar categoria:", error);
-            // Se der erro, a notificação aparece e o modal fica aberto para correção
             setNotification({ type: 'error', message: `Erro ao salvar categoria: ${error.message}` });
         }
     };
@@ -158,33 +169,34 @@ const Telatransacoes = () => {
         <div className="page-layout">
             <Sidebar 
                 activePage={currentPage} 
-                onNavigate={() => {}} 
+                onNavigate={handleNavigate} 
                 onNewTransaction={handleNewTransaction} 
             />
             
             <div className="main-content-area">
+                {notification && (
+                    <div className={`notification notification-${notification.type}`}>
+                        {notification.message}
+                    </div>
+                )}
                 
-                {notification && (<div className={`notification notification-${notification.type}`}>{notification.message}</div>)}
-                
-                {/* 1. Modal de Criação/Edição de Receita/Despesa */}
                 {(modalType === 'despesa' || modalType === 'receita') && (
                     modalType === 'despesa' ? 
                         <Telacriacaodesp 
                             transactionToEdit={transactionToEdit} 
                             onClose={handleCloseModal} 
                             onSaveSuccess={fetchData} 
-                            categories={categories} // Lista para dropdown
+                            categories={categories}
                         /> 
                         :
                         <Telacriacaoreceita 
                             transactionToEdit={transactionToEdit} 
                             onClose={handleCloseModal} 
                             onSaveSuccess={fetchData} 
-                            categories={categories} // Lista para dropdown
+                            categories={categories}
                         /> 
                 )}
                 
-                {/* 2. Modal Lista de Categorias (Telacategoria) */}
                 {modalType === 'categoria' && !showCategoryDetails && (
                     <Telacategoria 
                         onClose={handleCloseModal} 
@@ -194,12 +206,14 @@ const Telatransacoes = () => {
                     />
                 )}
                 
-                {/* 3. Sub-Modal de Criação/Edição de Detalhes da Categoria (Telacriacaocateg) */}
                 {modalType === 'categoria' && showCategoryDetails && (
                     <Telacriacaocateg
-                        categoryToEdit={categoryToEdit} // Objeto de edição ou null
+                        categoryToEdit={categoryToEdit}
                         onClose={handleCloseModal}
-                        onBackToCategories={() => { setCategoryToEdit(null); setShowCategoryDetails(false); }} // Limpa e volta
+                        onBackToCategories={() => {
+                            setCategoryToEdit(null);
+                            setShowCategoryDetails(false);
+                        }}
                         onSaveSuccess={handleSaveCategorySuccess} 
                     />
                 )}
@@ -216,7 +230,7 @@ const Telatransacoes = () => {
                             transactions={transactions} 
                             onDelete={handleDelete} 
                             onEdit={handleEdit} 
-                            categoryColors={categoryColors} // Mapa de cores para tags
+                            categoryColors={categoryColors}
                         />
                     </div>
                 </div>
