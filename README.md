@@ -1,70 +1,58 @@
-# Getting Started with Create React App
+# FinanSee
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**FinanSee** é mais do que um simples gerenciador de finanças: é o seu parceiro inteligente para organizar a vida financeira! Com ele, você controla entradas e saídas de despesas e receitas, acompanha tudo em um dashboard interativo e envolvente, personaliza categorias, define limites de orçamento e ainda gera relatórios detalhados com exportação de dados em .csv, .xlsx e .pdf.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+### Funcionalidades
 
-### `npm start`
+- **Dashboard Interativo**: para visualização clara das finanças.  
+- **Registro de Entradas e Saídas**: de despesas e receitas.  
+- **Personalização de Categorias**: conforme as necessidades do usuário.  
+- **Controle de Assinaturas e Limite de Orçamento**: com alertas para te manter no controle.  
+- **Geração de Relatórios Detalhados**: por período.  
+- **Exportação de Dados**: em **.csv**, **.xlsx** e **.pdf**.  
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Sessão Entrega 1
 
-### `npm test`
+Aqui você pode encontrar a documentação e os protótipos da nossa primeira entrega.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **Histórias de Usuário**  
+  [Link para o Google Docs](https://docs.google.com/document/d/1YpY6v586SQlHsqJYBKwsifRjCLia-7XnGeL71hH13EA/edit?usp=sharing)
 
-### `npm run build`
+- **Protótipo Lo-Fi**  
+  [Link para o Figma](https://www.figma.com/design/4wH4L6HfMEiwLSlrT983Lf/Untitled?t=UuScbsbhlYCsmGpJ-1)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **Screencast**  
+  [Link para o YouTube](https://youtu.be/TrUeBKmW7wQ?si=ryNm6PwUTuZHav1W)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- **Link repositório back:**  
+  [finansee](https://github.com/Leticia-Gabs/finansee.git)
+--- 
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Sessão Entrega 2
 
-### `npm run eject`
+Aqui você vai encontrar as histórias de usuário que estão em andamento, o screencast do site e o issue/bug tracker.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- **Histórias de Usuário Concluídas [Quadro Trello]**
+ 
+  <img width="278" height="270" alt="image" src="https://github.com/user-attachments/assets/4f9a64ca-09da-49be-b64b-4098d327183e" />
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- **Screencast do Site**  
+  https://youtu.be/66oUgMDzWVs
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+    **00:01 – HU01: Gerenciar Despesas**
+    O usuário pode registrar, visualizar, editar e excluir despesas. Cada despesa contém valor, data, descrição, categoria e forma de pagamento. As ações exibem mensagens de confirmação para sucesso nas operações.
+    
+    **00:30 – HU02: Gerenciar Receitas**
+    O usuário pode adicionar, visualizar, editar e excluir receitas, atualizando automaticamente o saldo total. Cada receita possui valor, data e fonte, com mensagens confirmando cada ação realizada.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- **Issue/Bug Tracker**  
+  <img width="934" height="314" alt="image" src="https://github.com/user-attachments/assets/650c34ef-294d-449c-91f2-0fdc4669c9a5" />
+  <img width="931" height="235" alt="image" src="https://github.com/user-attachments/assets/821a2467-41da-4af5-acab-25ba44e02e8e" />
+  <img width="930" height="174" alt="image" src="https://github.com/user-attachments/assets/d057f4af-6c5b-48f2-adcc-066fa5803ecf" />
+  <img width="929" height="192" alt="image" src="https://github.com/user-attachments/assets/345cbc10-e7b5-43f5-a202-65d44829ff6e" />
 
-## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
