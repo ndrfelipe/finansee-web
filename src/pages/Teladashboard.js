@@ -1,5 +1,4 @@
 // src/pages/Teladashboard.js
-
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
@@ -13,14 +12,23 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { getTransactions } from '../services/mockApi';
+import { getTransactions, getCategoriesMock } from '../services/mockApi';
+import Telacriacaodesp from './Telacriacaodesp'; 
+import Telacriacaoreceita from './Telacriacaoreceita'; 
+import Telacategoria from './Telacategoria';
+import Telacriacaocateg from './Telacriacaocateg';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 const Teladashboard = () => {
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [currentPage] = useState('dashboard');
+  const [modalType, setModalType] = useState(null); 
+  const [transactionToEdit, setTransactionToEdit] = useState(null);
+  const [categoryToEdit, setCategoryToEdit] = useState(null);
+  const [showCategoryDetails, setShowCategoryDetails] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,7 +39,16 @@ const Teladashboard = () => {
         console.error('Erro ao carregar transações:', err);
       }
     };
+    const fetchCategories = async () => {
+      try {
+        const data = await getCategoriesMock();
+        setCategories(data);
+      } catch (err) {
+        console.error('Erro ao carregar categorias:', err);
+      }
+    };
     fetchData();
+    fetchCategories();
   }, []);
 
   const { receitas, despesas, saldoAtual } = useMemo(() => {
@@ -71,20 +88,12 @@ const Teladashboard = () => {
       legend: { display: false },
       tooltip: {
         callbacks: {
-          label: (context) => {
-            const category = context.label;
-            const value = context.parsed.y;
-            return `${category}: ${value}%`;
-          },
+          label: (context) => `${context.label}: ${context.parsed.y}%`,
         },
       },
     },
     scales: {
-      y: {
-        beginAtZero: true,
-        max: 100,
-        ticks: { stepSize: 20 },
-      },
+      y: { beginAtZero: true, max: 100, ticks: { stepSize: 20 } },
     },
   };
 
@@ -107,12 +116,31 @@ const Teladashboard = () => {
     }
   };
 
+  const handleNewTransaction = (type) => {
+    setTransactionToEdit(null);
+    setCategoryToEdit(null);
+    setShowCategoryDetails(false);
+    setModalType(type);
+  };
+
+  const handleCloseModal = () => {
+    setModalType(null);
+    setTransactionToEdit(null);
+    setCategoryToEdit(null);
+    setShowCategoryDetails(false);
+  };
+
+  const handleBackToCategories = () => {
+    setCategoryToEdit(null);
+    setShowCategoryDetails(false);
+  };
+
   return (
     <div className="page-layout">
       <Sidebar
         activePage={currentPage}
         onNavigate={handleNavigate}
-        onNewTransaction={(type) => navigate(`/nova-${type}`)}
+        onNewTransaction={handleNewTransaction}
       />
 
       <div className="main-content-area">
@@ -128,7 +156,11 @@ const Teladashboard = () => {
             <p className="card-value">R$ {saldoAtual.toFixed(2)}</p>
           </div>
 
-          <div className="summary-card">
+          <div
+            className="summary-card"
+            style={{ backgroundColor: '#f0f0f0', position: 'relative', cursor: 'pointer' }}
+            onClick={() => handleNewTransaction('receita')}
+          >
             <div className="card-header">
               <h3>Receitas</h3>
               <FaArrowUp className="income-icon" />
@@ -136,12 +168,27 @@ const Teladashboard = () => {
             <p className="card-value">R$ {receitas.toFixed(2)}</p>
           </div>
 
-          <div className="summary-card">
+          <div
+            className="summary-card"
+            style={{ backgroundColor: '#f0f0f0', position: 'relative', cursor: 'pointer' }}
+            onClick={() => handleNewTransaction('despesa')}
+          >
             <div className="card-header">
               <h3>Despesas</h3>
               <FaArrowDown className="expense-icon" />
             </div>
             <p className="card-value">R$ {despesas.toFixed(2)}</p>
+          </div>
+
+          <div
+            className="summary-card"
+            style={{ backgroundColor: '#f0f0f0', position: 'relative', cursor: 'pointer' }}
+            onClick={() => handleNewTransaction('categoria')}
+          >
+            <div className="card-header">
+              <h3>Categoria</h3>
+            </div>
+            <p className="card-value">Gerenciar categorias</p>
           </div>
         </div>
 
@@ -150,19 +197,53 @@ const Teladashboard = () => {
           <div className="chart-card">
             <h3>Despesas por categoria</h3>
             <Bar data={despesasPorCategoria} options={chartOptions} />
-            <button className="secondary-button" onClick={() => navigate('/relatorios')}>
-              Ver mais
-            </button>
           </div>
 
           <div className="chart-card">
             <h3>Receitas por categoria</h3>
             <Bar data={receitasPorCategoria} options={chartOptions} />
-            <button className="secondary-button" onClick={() => navigate('/relatorios')}>
-              Ver mais
-            </button>
           </div>
         </div>
+
+        {/* Modais */}
+        {modalType === 'despesa' && (
+          <Telacriacaodesp
+            transactionToEdit={transactionToEdit}
+            onClose={handleCloseModal}
+            onSaveSuccess={() => {}}
+            categories={categories}
+          />
+        )}
+        {modalType === 'receita' && (
+          <Telacriacaoreceita
+            transactionToEdit={transactionToEdit}
+            onClose={handleCloseModal}
+            onSaveSuccess={() => {}}
+            categories={categories}
+          />
+        )}
+        {modalType === 'categoria' && !showCategoryDetails && (
+          <Telacategoria
+            onClose={handleCloseModal}
+            onEditCategory={(cat) => {
+              setCategoryToEdit(cat);
+              setShowCategoryDetails(true);
+            }}
+            onCreateNewCategory={() => {
+              setCategoryToEdit(null);
+              setShowCategoryDetails(true);
+            }}
+            categories={categories}
+          />
+        )}
+        {modalType === 'categoria' && showCategoryDetails && (
+          <Telacriacaocateg
+            categoryToEdit={categoryToEdit}
+            onClose={handleCloseModal}
+            onBackToCategories={handleBackToCategories}
+            onSaveSuccess={() => {}}
+          />
+        )}
       </div>
     </div>
   );
