@@ -22,6 +22,8 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 const Teladashboard = () => {
   const navigate = useNavigate();
+
+  // Estados principais
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [currentPage] = useState('dashboard');
@@ -30,27 +32,31 @@ const Teladashboard = () => {
   const [categoryToEdit, setCategoryToEdit] = useState(null);
   const [showCategoryDetails, setShowCategoryDetails] = useState(false);
 
+  // --- FUNÇÃO PARA CARREGAR DADOS ---  
+  const fetchData = async () => {
+    try {
+      const txs = await getTransactions();
+      setTransactions(txs);
+    } catch (err) {
+      console.error('Erro ao carregar transações:', err);
+    }
+  };
+  
+  const fetchCategories = async () => {
+    try {
+      const cats = await getCategoriesMock();
+      setCategories(cats);
+    } catch (err) {
+      console.error('Erro ao carregar categorias:', err);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getTransactions();
-        setTransactions(data);
-      } catch (err) {
-        console.error('Erro ao carregar transações:', err);
-      }
-    };
-    const fetchCategories = async () => {
-      try {
-        const data = await getCategoriesMock();
-        setCategories(data);
-      } catch (err) {
-        console.error('Erro ao carregar categorias:', err);
-      }
-    };
     fetchData();
     fetchCategories();
   }, []);
 
+  // --- MEMOIZADOS PARA DASHBOARD ---
   const { receitas, despesas, saldoAtual } = useMemo(() => {
     const totalReceitas = transactions.filter(t => t.valor > 0).reduce((sum, t) => sum + t.valor, 0);
     const totalDespesas = transactions.filter(t => t.valor < 0).reduce((sum, t) => sum + Math.abs(t.valor), 0);
@@ -92,27 +98,17 @@ const Teladashboard = () => {
         },
       },
     },
-    scales: {
-      y: { beginAtZero: true, max: 100, ticks: { stepSize: 20 } },
-    },
+    scales: { y: { beginAtZero: true, max: 100, ticks: { stepSize: 20 } } },
   };
 
+  // --- HANDLERS ---
   const handleNavigate = (key) => {
     switch (key) {
-      case 'dashboard':
-        navigate('/dashboard');
-        break;
-      case 'transacoes':
-        navigate('/');
-        break;
-      case 'categorias-list':
-        navigate('/categorias');
-        break;
-      case 'relatorio':
-        navigate('/relatorios');
-        break;
-      default:
-        break;
+      case 'dashboard': navigate('/dashboard'); break;
+      case 'transacoes': navigate('/'); break;
+      case 'categorias-list': navigate('/categorias'); break;
+      case 'relatorio': navigate('/relatorios'); break;
+      default: break;
     }
   };
 
@@ -135,6 +131,7 @@ const Teladashboard = () => {
     setShowCategoryDetails(false);
   };
 
+  // --- RENDER ---
   return (
     <div className="page-layout">
       <Sidebar
@@ -146,63 +143,33 @@ const Teladashboard = () => {
       <div className="main-content-area">
         <h1>Dashboard</h1>
 
-        {/* Cards de saldo, receitas e despesas */}
+        {/* Cards */}
         <div className="summary-cards-container">
           <div className="summary-card">
-            <div className="card-header">
-              <h3>Saldo atual</h3>
-              <FaUniversity className="income-icon" />
-            </div>
+            <div className="card-header"><h3>Saldo atual</h3><FaUniversity className="income-icon" /></div>
             <p className="card-value">R$ {saldoAtual.toFixed(2)}</p>
           </div>
 
-          <div
-            className="summary-card"
-            style={{ backgroundColor: '#f0f0f0', position: 'relative', cursor: 'pointer' }}
-            onClick={() => handleNewTransaction('receita')}
-          >
-            <div className="card-header">
-              <h3>Receitas</h3>
-              <FaArrowUp className="income-icon" />
-            </div>
+          <div className="summary-card" style={{ backgroundColor: '#f0f0f0', cursor: 'pointer' }} onClick={() => handleNewTransaction('receita')}>
+            <div className="card-header"><h3>Receitas</h3><FaArrowUp className="income-icon" /></div>
             <p className="card-value">R$ {receitas.toFixed(2)}</p>
           </div>
 
-          <div
-            className="summary-card"
-            style={{ backgroundColor: '#f0f0f0', position: 'relative', cursor: 'pointer' }}
-            onClick={() => handleNewTransaction('despesa')}
-          >
-            <div className="card-header">
-              <h3>Despesas</h3>
-              <FaArrowDown className="expense-icon" />
-            </div>
+          <div className="summary-card" style={{ backgroundColor: '#f0f0f0', cursor: 'pointer' }} onClick={() => handleNewTransaction('despesa')}>
+            <div className="card-header"><h3>Despesas</h3><FaArrowDown className="expense-icon" /></div>
             <p className="card-value">R$ {despesas.toFixed(2)}</p>
           </div>
 
-          <div
-            className="summary-card"
-            style={{ backgroundColor: '#f0f0f0', position: 'relative', cursor: 'pointer' }}
-            onClick={() => handleNewTransaction('categoria')}
-          >
-            <div className="card-header">
-              <h3>Categoria</h3>
-            </div>
+          <div className="summary-card" style={{ backgroundColor: '#f0f0f0', cursor: 'pointer' }} onClick={() => handleNewTransaction('categoria')}>
+            <div className="card-header"><h3>Categoria</h3></div>
             <p className="card-value">Gerenciar categorias</p>
           </div>
         </div>
 
-        {/* Gráficos lado a lado */}
+        {/* Gráficos */}
         <div className="charts-row">
-          <div className="chart-card">
-            <h3>Despesas por categoria</h3>
-            <Bar data={despesasPorCategoria} options={chartOptions} />
-          </div>
-
-          <div className="chart-card">
-            <h3>Receitas por categoria</h3>
-            <Bar data={receitasPorCategoria} options={chartOptions} />
-          </div>
+          <div className="chart-card"><h3>Despesas por categoria</h3><Bar data={despesasPorCategoria} options={chartOptions} /></div>
+          <div className="chart-card"><h3>Receitas por categoria</h3><Bar data={receitasPorCategoria} options={chartOptions} /></div>
         </div>
 
         {/* Modais */}
@@ -210,7 +177,7 @@ const Teladashboard = () => {
           <Telacriacaodesp
             transactionToEdit={transactionToEdit}
             onClose={handleCloseModal}
-            onSaveSuccess={() => {}}
+            onSaveSuccess={async () => { await fetchData(); }} 
             categories={categories}
           />
         )}
@@ -218,21 +185,15 @@ const Teladashboard = () => {
           <Telacriacaoreceita
             transactionToEdit={transactionToEdit}
             onClose={handleCloseModal}
-            onSaveSuccess={() => {}}
+            onSaveSuccess={async () => { await fetchData(); }}
             categories={categories}
           />
         )}
         {modalType === 'categoria' && !showCategoryDetails && (
           <Telacategoria
             onClose={handleCloseModal}
-            onEditCategory={(cat) => {
-              setCategoryToEdit(cat);
-              setShowCategoryDetails(true);
-            }}
-            onCreateNewCategory={() => {
-              setCategoryToEdit(null);
-              setShowCategoryDetails(true);
-            }}
+            onEditCategory={(cat) => { setCategoryToEdit(cat); setShowCategoryDetails(true); }}
+            onCreateNewCategory={() => { setCategoryToEdit(null); setShowCategoryDetails(true); }}
             categories={categories}
           />
         )}
@@ -241,7 +202,7 @@ const Teladashboard = () => {
             categoryToEdit={categoryToEdit}
             onClose={handleCloseModal}
             onBackToCategories={handleBackToCategories}
-            onSaveSuccess={() => {}}
+            onSaveSuccess={async () => { await fetchCategories(); }}
           />
         )}
       </div>
@@ -250,3 +211,4 @@ const Teladashboard = () => {
 };
 
 export default Teladashboard;
+
