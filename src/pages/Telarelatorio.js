@@ -1,17 +1,12 @@
-// src/pages/TelaRelatorio.js
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-// IMPORTANTE: Necessário instalar 'recharts' (npm install recharts)
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Sidebar from '../components/Sidebar';
 import SummaryCards from '../components/SummaryCards';
 import MonthSelector from '../components/MonthSelector';
 import { getTransactions, getCategoriesMock } from '../services/mockApi';
 
-// Componente auxiliar para formatar a lista lateral de Despesas por Categoria
 const CategoryLegend = ({ data, totalDespesasMes }) => {
-    // Função para formatar o valor como moeda brasileira
     const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
     return (
@@ -43,15 +38,38 @@ const CategoryLegend = ({ data, totalDespesasMes }) => {
 const TelaRelatorio = () => {
     const navigate = useNavigate();
     
-    // ESTADOS BASE
     const [transactions, setTransactions] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
-    // Definimos o mês inicial para Setembro/2025 como no protótipo (e nos dados mockados)
     const [currentMonth, setCurrentMonth] = useState('Setembro 2025');
     const currentPage = 'relatorio';
 
-    // --- LÓGICA DE NAVEGAÇÃO E CARREGAMENTO ---
+    const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    const getCurrentDate = useMemo(() => {
+        const [monthName, yearStr] = currentMonth.split(' ');
+        const monthIndex = monthNames.findIndex(name => name === monthName);
+        const year = parseInt(yearStr);
+        return new Date(year, monthIndex, 1); 
+    }, [currentMonth]);
+    
+    const handleMonthChange = (direction) => {
+        const currentDate = getCurrentDate;
+        let newDate;
+        
+        if (direction === 'next') {
+            newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+        } else if (direction === 'previous') {
+            newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+        } else {
+            return;
+        }
+
+        const newMonthName = monthNames[newDate.getMonth()];
+        const newYear = newDate.getFullYear();
+        
+        setCurrentMonth(`${newMonthName} ${newYear}`);
+    };
+    
     const handleNavigate = (key) => {
         switch (key) {
             case 'dashboard': navigate('/dashboard'); break;
@@ -77,8 +95,6 @@ const TelaRelatorio = () => {
     useEffect(() => {
         fetchData();
     }, []);
-
-    // --- FUNÇÕES DE CÁLCULO DE DADOS ---
     
     const getMonthAndYear = (dateStr) => {
         const date = new Date(dateStr + 'T00:00:00');
@@ -87,15 +103,13 @@ const TelaRelatorio = () => {
         return `${month.charAt(0).toUpperCase() + month.slice(1)} ${year}`;
     };
 
-    // Filtra as transações para o mês selecionado
     const transactionsInCurrentMonth = useMemo(() => {
         const currentMonthYear = currentMonth.toLowerCase();
         return transactions.filter(t => 
-            t.date && getMonthAndYear(t.date).toLowerCase() === currentMonthYear
+            t.date && getMonthAndYear(t.date).toLowerCase() === currentMonthYear.toLowerCase()
         );
     }, [transactions, currentMonth]);
 
-    // 1. Cálculo dos Cartões Superiores (usando TODAS as transações para Saldo Atual)
     const { totalReceitasGeral, totalDespesasGeral, saldoAtualGeral } = useMemo(() => {
         const totalR = transactions.filter(t => t.valor > 0).reduce((sum, t) => sum + t.valor, 0);
         const totalD = transactions.filter(t => t.valor < 0).reduce((sum, t) => sum + Math.abs(t.valor), 0);
@@ -109,14 +123,14 @@ const TelaRelatorio = () => {
     }, [transactions]);
 
 
-    // 2. Agrupamento de Despesas por Categoria para o GRÁFICO
+    
     const chartData = useMemo(() => {
         const despesasDoMes = transactionsInCurrentMonth.filter(t => t.valor < 0);
         const totalDespesasMes = despesasDoMes.reduce((sum, t) => sum + Math.abs(t.valor), 0);
 
         if (totalDespesasMes === 0) return { data: [], total: 0 };
 
-        // 2.1. Agrupar os valores por categoria
+        
         const categoryTotals = despesasDoMes.reduce((acc, transaction) => {
             const categoryName = transaction.category || 'Outros'; 
             const value = Math.abs(transaction.valor);
@@ -124,24 +138,23 @@ const TelaRelatorio = () => {
             return acc;
         }, {});
 
-        // 2.2. Formatar para o gráfico e lista
+       
         let formattedData = Object.keys(categoryTotals).map(name => {
             const value = categoryTotals[name];
             const percentage = Math.round((value / totalDespesasMes) * 100);
             const categoryDetails = categories.find(c => c.name === name);
             
-            // Define a cor da categoria a partir do mock, se existir
-            let color = categoryDetails ? categoryDetails.color : '#42a5f5'; // Cor Azul padrão para "Outros"
+            
+            let color = categoryDetails ? categoryDetails.color : '#42a5f5'; 
 
             return {
                 name,
-                value, // Valor em R$
+                value, 
                 percentage,
                 color,
             };
         });
 
-        // O protótipo mostra as barras em ordem decrescente de porcentagem
         formattedData.sort((a, b) => b.percentage - a.percentage);
         
         return {
@@ -160,7 +173,6 @@ const TelaRelatorio = () => {
             <Sidebar
                 activePage={currentPage}
                 onNavigate={handleNavigate}
-                // Redireciona para a tela de transações para criar uma nova transação
                 onNewTransaction={() => navigate('/')} 
             />
             
@@ -177,11 +189,11 @@ const TelaRelatorio = () => {
                 {/* 2. Área Principal do Relatório */}
                 <div className="relatorio-main-card">
                     
-                    {/* Seletor de Mês */}
+                    {/* Seletor de Mês (AGORA DINÂMICO) */}
                     <MonthSelector
                         currentMonth={currentMonth}
-                        onPrevious={() => setCurrentMonth('Agosto 2025')}
-                        onNext={() => setCurrentMonth('Outubro 2025')}
+                        onPrevious={() => handleMonthChange('previous')} 
+                        onNext={() => handleMonthChange('next')} 
                         isReportContext={true}
                     />
 
@@ -204,10 +216,9 @@ const TelaRelatorio = () => {
                                     {reportData.map((entry, index) => (
                                         <Bar 
                                             key={`bar-${index}`}
-                                            dataKey="value" // Usamos o valor em R$
+                                            dataKey="value" 
                                             fill={entry.color} 
                                             maxBarSize={60} 
-                                            // Label com a Porcentagem no topo da barra
                                             label={{ 
                                                 position: 'top', 
                                                 formatter: () => `${entry.percentage}%`,
