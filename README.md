@@ -62,23 +62,17 @@ Aqui você vai encontrar as histórias de usuário que estão em andamento, o sc
 Aqui você vai encontrar as histórias de usuário selecionadas para esta entrega, o screencast do sistema atualizado, o issue/bug tracker, o ambiente de versionamento e os testes automatizados.
 
 - **Histórias de Usuário Selecionadas [Quadro Trello]**
-  
-  **HU03: Categorias Personalizáveis**
-  Permitir que o usuário crie, edite e exclua categorias de despesas personalizadas.  
- **HU05: Relatórios e Gráficos**
-  Exibir um gráfico de barras com a distribuição dos gastos por categoria no mês atual.  
-  
   ![Quadro Trello - Entrega 03](https://github.com/user-attachments/assets/SEU_ID_DE_IMAGEM_TRELLO)
 
 - **Screencast do Sistema (Atualizado)**  
   https://youtu.be/COLOQUE_SEU_LINK
 
   **00:15 – HU03: Categorias Personalizáveis**  
-  O usuário pode criar, editar e excluir categorias de despesas personalizadas, como “Streaming” ou “Compras online”. O sistema impede a criação de categorias com nomes duplicados, exibindo uma mensagem de erro quando isso ocorre, garantindo melhor organização e controle dos gastos.
+  O usuário pode criar, editar e excluir categorias de despesas personalizadas, como “Streaming” ou “Compras online”. O sistema impede a criação de categorias com nomes duplicados, exibindo uma mensagem de erro quando isso ocorre, garantindo melhor organização e          controle dos gastos.
 
-  **00:45 – HU05: Relatórios e Gráficos**  
-  O usuário pode visualizar um relatório mensal com um gráfico de barras que mostra seus gastos por categoria. O sistema exibe o total gasto no mês e a porcentagem correspondente de cada categoria, permitindo uma análise clara e visual das despesas.
-
+  **01:10 – HU05: Busca e Filtros**  
+  O usuário pode buscar e filtrar despesas por categoria, data ou valor para encontrar registros específicos. O sistema permite combinações de filtros, como visualizar apenas despesas da categoria “Alimentação” dos últimos 30 dias ou acima de um determinado valor,        exibindo resultados precisos e organizados.
+  
 - **Testes Automatizados**  
   Implementação de testes automatizados (unitários e/ou de integração). Adicionar screencast da execução dos testes (disponível no YouTube) e link no README.
 
@@ -90,10 +84,9 @@ Aqui você vai encontrar as histórias de usuário selecionadas para esta entreg
   ![Resultados dos Testes](https://github.com/user-attachments/assets/SEU_ID_DE_IMAGEM_TESTS)
 
   - **Issue/Bug Tracker**
-  <img width="921" height="175" alt="image" src="https://github.com/user-attachments/assets/15e913ca-217f-463b-945e-0241b88715cc" />
-  <img width="927" height="201" alt="image" src="https://github.com/user-attachments/assets/50508b93-609b-4ae6-bf57-a684a97ca55f" />
-  <img width="922" height="176" alt="image" src="https://github.com/user-attachments/assets/0eda5742-85a4-4d66-a860-646162b26774" />
-  <img width="927" height="182" alt="image" src="https://github.com/user-attachments/assets/3f331c22-997b-4868-b710-beabff4f0807" />
+  <img width="921" height="178" alt="image" src="https://github.com/user-attachments/assets/e193a215-a50e-43c2-a202-47905c8c8b31" />
+
+
 
 
 
