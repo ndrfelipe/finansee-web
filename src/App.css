@@ -740,3 +740,111 @@ label {
   color: var(--danger-red); 
   transform: scale(1.1);
 }
+/* ====================================================================== */
+/* === 11. RELATÓRIOS (TelaRelatorio.js) ================================ */
+/* ====================================================================== */
+
+.relatorio-title {
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    font-size: 2rem;
+    font-weight: 500;
+}
+
+.relatorio-main-card {
+    background-color: var(--card-background);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    margin-top: 25px; /* Para separação dos Summary Cards */
+}
+
+/* Flex Container do Gráfico e Legenda */
+.relatorio-content-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; 
+    gap: 40px;
+    margin-top: 30px;
+    /* Adiciona responsividade básica para telas menores */
+    flex-wrap: wrap; 
+}
+
+.relatorio-chart-container {
+    flex: 2; /* Ocupa mais espaço */
+    min-width: 300px;
+    max-width: 65%;
+    height: 300px; 
+}
+
+/* Estilos para a Legenda Lateral de Categorias */
+.relatorio-category-legend {
+    flex: 1; /* Ocupa a lateral */
+    min-width: 250px;
+    padding-left: 20px;
+}
+
+.relatorio-category-legend h3 {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+}
+
+.relatorio-legend-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.relatorio-legend-icon-and-name {
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+}
+
+.relatorio-legend-icon {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.relatorio-legend-values {
+    text-align: right;
+    font-size: 0.9em;
+}
+
+.relatorio-legend-values .value {
+    display: block;
+    font-weight: bold;
+    color: var(--text-dark);
+    margin-bottom: 2px;
+}
+
+.relatorio-legend-values .percentage {
+    display: block;
+    font-size: 0.85em;
+    /* A cor será aplicada inline com base na categoria */
+}
+
+/* Responsividade para a seção de relatórios */
+@media (max-width: 900px) {
+    .relatorio-content-flex {
+        flex-direction: column;
+        gap: 20px;
+    }
+    .relatorio-chart-container {
+        max-width: 100%;
+        width: 100%;
+    }
+    .relatorio-category-legend {
+        min-width: 100%;
+        padding-left: 0;
+    }
+}
