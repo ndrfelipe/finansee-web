@@ -572,6 +572,21 @@ label {
     transform: scale(1.1);
 }
 
+.delete-icon-button {
+    background: none;
+    border: none;
+    color: var(--danger-red);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 5px;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.delete-icon-button:hover {
+    color: var(--secondary-blue);
+    transform: scale(1.1);
+}
+
 .modal-actions-footer {
     padding-top: 15px;
 }

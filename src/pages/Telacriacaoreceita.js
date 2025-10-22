@@ -2,41 +2,52 @@
 
 import React, { useState, useEffect } from 'react'; 
 import { FaTimes } from 'react-icons/fa'; 
-import { createTransaction, updateTransaction } from '../services/mockApi'; 
+import { createTransaction, updateTransaction } from '../services/apiService';
 
 const Telacriacaoreceita = ({ transactionToEdit, onClose, onSaveSuccess, categories = [] }) => {
     
   const [formData, setFormData] = useState({
-    id: null,
-    valor: '',
-    date: new Date().toISOString().split('T')[0],
-    description: '',
-    category: '',
-    account: '',
-    tipoPagamento: 'pix',
-    tipo: 'receita'
-  });
+     id: null,
+     valor: '',
+     data: new Date().toISOString().split('T')[0], // name="data"
+     descricao: '',   // name="descricao"
+     categoriaId: '', // name="categoriaId" (armazena o ID)
+     conta: '',       // name="conta"
+     formaPagamento: 'PIX', // name="formaPagamento"
+     tipo: 'receita'
+   });
 
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    if (transactionToEdit) {
-      setFormData({
-        id: transactionToEdit.id,
-        valor: Math.abs(transactionToEdit.valor).toFixed(2), 
-        date: transactionToEdit.date, 
-        description: transactionToEdit.description,
-        category: transactionToEdit.category,
-        account: transactionToEdit.account,
-        tipoPagamento: transactionToEdit.tipoPagamento,
+     if (transactionToEdit) {
+        setFormData({
+          id: transactionToEdit.id,
+          valor: Math.abs(transactionToEdit.valor).toFixed(2), 
+          data: transactionToEdit.data, 
+          descricao: transactionToEdit.descricao,
+          categoriaId: transactionToEdit.categoriaId,
+          conta: transactionToEdit.conta,
+          formaPagamento: transactionToEdit.formaPagamento,
+          tipo: 'receita'
+        });
+        setIsEditing(true);
+     } else {
+      // Reseta o formulário para criação (com os nomes corretos)
+        setFormData({
+        id: null,
+        valor: '',
+        data: new Date().toISOString().split('T')[0],
+        descricao: '',
+        categoriaId: '',
+        conta: '',
+        formaPagamento: 'PIX', 
         tipo: 'receita'
       });
-      setIsEditing(true);
-    } else {
-      setIsEditing(false);
-    }
-  }, [transactionToEdit]);
+        setIsEditing(false);
+     }
+   }, [transactionToEdit]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -51,7 +62,7 @@ const Telacriacaoreceita = ({ transactionToEdit, onClose, onSaveSuccess, categor
 
     try {
       if (isEditing) {
-        await updateTransaction(formData.id, dataToSave);
+        await updateTransaction(dataToSave); 
       } else {
         await createTransaction(dataToSave);
       }
@@ -65,7 +76,7 @@ const Telacriacaoreceita = ({ transactionToEdit, onClose, onSaveSuccess, categor
     }
   };
 
-  const incomeCategories = categories.filter(cat => cat.type === 'receita');
+  const incomeCategories = categories.filter(cat => cat.tipo === 'RECEITA');
 
   return (
     <div className="form-modal-overlay">
@@ -94,8 +105,8 @@ const Telacriacaoreceita = ({ transactionToEdit, onClose, onSaveSuccess, categor
           <label>Data</label>
           <input 
             type="date"
-            name="date"
-            value={formData.date}
+            name="data"
+            value={formData.data}
             onChange={handleChange}
             required
             className="styled-input"
@@ -104,8 +115,8 @@ const Telacriacaoreceita = ({ transactionToEdit, onClose, onSaveSuccess, categor
           <label>Descrição</label>
           <input 
             type="text"
-            name="description"
-            value={formData.description}
+            name="descricao"
+            value={formData.descricao}
             onChange={handleChange}
             placeholder="Ex: Salário, Venda de Produto"
             required
@@ -114,8 +125,8 @@ const Telacriacaoreceita = ({ transactionToEdit, onClose, onSaveSuccess, categor
           
           <label>Categoria</label>
           <select
-            name="category"
-            value={formData.category}
+            name="categoriaId"
+            value={formData.categoriaId}
             onChange={handleChange}
             className="styled-select" 
             required
@@ -123,8 +134,8 @@ const Telacriacaoreceita = ({ transactionToEdit, onClose, onSaveSuccess, categor
           >
             <option value="" disabled>Selecione uma categoria...</option>
             {incomeCategories.map((cat) => (
-              <option key={cat.id} value={cat.name}>
-                {cat.name}
+              <option key={cat.id} value={cat.id}>
+                {cat.nome}
               </option>
             ))}
           </select>
@@ -148,10 +159,10 @@ const Telacriacaoreceita = ({ transactionToEdit, onClose, onSaveSuccess, categor
             className="styled-select"
             required
           >
-            <option value="pix">Pix</option>
-            <option value="boleto">Boleto</option>
-            <option value="dinheiro">Dinheiro</option>
-            <option value="cartao">Cartão</option>
+            <option value="PIX">Pix</option>
+            <option value="BOLETO">Boleto</option>
+            <option value="CARTAO_CREDITO">Cartão de Crédito</option>
+            <option value="CARTAO_DEBITO">Cartão de Débito</option>
           </select>
 
           <button type="submit" className="create-button" disabled={loading}>

@@ -2,41 +2,53 @@
 
 import React, { useState, useEffect } from 'react'; 
 import { FaTimes } from 'react-icons/fa'; 
-import { createTransaction, updateTransaction } from '../services/mockApi'; 
+import { createTransaction, updateTransaction } from '../services/apiService'; 
 
 const Telacriacaodesp = ({ transactionToEdit, onClose, onSaveSuccess, categories = [] }) => {
     
   const [formData, setFormData] = useState({
-    id: null,
-    valor: '',
-    date: new Date().toISOString().split('T')[0],
-    description: '',
-    category: '',
-    account: '',
-    tipoPagamento: 'pix',
-    tipo: 'despesa'
-  });
+     id: null,
+     valor: '',
+     data: new Date().toISOString().split('T')[0],
+     descricao: '',   // <- Corrigido de 'description'
+     categoriaId: '', // <- Corrigido de 'category' (agora armazena o ID)
+     conta: '',       // <- Corrigido de 'account'
+     formaPagamento: 'PIX', // <- Corrigido de 'tipoPagamento'
+     tipo: 'despesa'
+   });
 
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    if (transactionToEdit) {
-      setFormData({
-        id: transactionToEdit.id,
-        valor: Math.abs(transactionToEdit.valor).toFixed(2), 
-        date: transactionToEdit.date, 
-        description: transactionToEdit.description,
-        category: transactionToEdit.category,
-        account: transactionToEdit.account,
-        tipoPagamento: transactionToEdit.tipoPagamento,
+     if (transactionToEdit) {
+      // O 'transactionToEdit' vem do GET /api/transacoes
+        setFormData({
+          id: transactionToEdit.id,
+          valor: Math.abs(transactionToEdit.valor).toFixed(2), // O valor vem negativo
+          data: transactionToEdit.data, 
+          descricao: transactionToEdit.descricao,     // <- Corrigido
+          categoriaId: transactionToEdit.categoriaId, // <- Corrigido
+          conta: transactionToEdit.conta,             // <- Corrigido
+          formaPagamento: transactionToEdit.formaPagamento, // <- Corrigido
+          tipo: 'despesa'
+        });
+        setIsEditing(true);
+     } else {
+      // Reseta o formulário para criação
+        setFormData({
+        id: null,
+        valor: '',
+        data: new Date().toISOString().split('T')[0],
+        descricao: '',
+        categoriaId: '',
+        conta: '',
+        formaPagamento: 'PIX',
         tipo: 'despesa'
       });
-      setIsEditing(true);
-    } else {
-      setIsEditing(false);
-    }
-  }, [transactionToEdit]);
+        setIsEditing(false);
+     }
+   }, [transactionToEdit]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,25 +59,28 @@ const Telacriacaodesp = ({ transactionToEdit, onClose, onSaveSuccess, categories
     e.preventDefault();
     setLoading(true);
 
-    const dataToSave = { ...formData, valor: parseFloat(formData.valor) };
-
     try {
+      const dataToSave = {
+        ...formData,
+        valor: parseFloat(formData.valor)
+      };
+
       if (isEditing) {
-        await updateTransaction(formData.id, dataToSave);
-      } else {
-        await createTransaction(dataToSave);
-      }
-      onSaveSuccess(); 
-      onClose(); 
-    } catch (error) {
-      console.error("Erro ao salvar despesa:", error);
-      alert(`Erro: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
+          await updateTransaction(dataToSave); // Passa o objeto inteiro
+        } else {
+          await createTransaction(dataToSave); // Passa o objeto inteiro
+        }
+        onSaveSuccess(); // Recarrega os dados na tela principal
+        onClose();       // Fecha o modal
+     } catch (error) {
+        console.error("Erro ao salvar despesa:", error);
+        alert(`Erro: ${error.message}`);
+     } finally {
+        setLoading(false);
+     }
   };
 
-  const expenseCategories = categories.filter(cat => cat.type === 'despesa');
+  const expenseCategories = categories.filter(cat => cat.tipo === 'DESPESA');
 
   return (
     <div className="form-modal-overlay">
@@ -94,8 +109,8 @@ const Telacriacaodesp = ({ transactionToEdit, onClose, onSaveSuccess, categories
           <label>Data</label>
           <input 
             type="date"
-            name="date"
-            value={formData.date}
+            name="data"
+            value={formData.data}
             onChange={handleChange}
             required
             className="styled-input"
@@ -104,8 +119,8 @@ const Telacriacaodesp = ({ transactionToEdit, onClose, onSaveSuccess, categories
           <label>Descrição</label>
           <input 
             type="text"
-            name="description"
-            value={formData.description}
+            name="descricao"
+            value={formData.descricao}
             onChange={handleChange}
             placeholder="Ex: Conta de luz, Supermercado"
             required
@@ -114,8 +129,8 @@ const Telacriacaodesp = ({ transactionToEdit, onClose, onSaveSuccess, categories
           
           <label>Categoria</label>
           <select
-            name="category"
-            value={formData.category}
+            name="categoriaId"
+            value={formData.categoriaId}
             onChange={handleChange}
             className="styled-select" 
             required
@@ -123,8 +138,8 @@ const Telacriacaodesp = ({ transactionToEdit, onClose, onSaveSuccess, categories
           >
             <option value="" disabled>Selecione uma categoria...</option>
             {expenseCategories.map((cat) => (
-              <option key={cat.id} value={cat.name}>
-                {cat.name}
+              <option key={cat.id} value={cat.id}>
+                {cat.nome}
               </option>
             ))}
           </select>
@@ -132,8 +147,8 @@ const Telacriacaodesp = ({ transactionToEdit, onClose, onSaveSuccess, categories
           <label>Conta</label>
           <input 
             type="text"
-            name="account"
-            value={formData.account}
+            name="conta"
+            value={formData.conta}
             onChange={handleChange}
             placeholder="Ex: Nubank, Carteira, Banco do Brasil"
             required
@@ -142,16 +157,16 @@ const Telacriacaodesp = ({ transactionToEdit, onClose, onSaveSuccess, categories
 
           <label>Tipo de pagamento</label>
           <select
-            name="tipoPagamento"
-            value={formData.tipoPagamento}
+            name="formaPagamento"
+            value={formData.formaPagamento}
             onChange={handleChange}
             className="styled-select"
             required
           >
-            <option value="pix">Pix</option>
-            <option value="boleto">Boleto</option>
-            <option value="dinheiro">Dinheiro</option>
-            <option value="cartao">Cartão</option>
+            <option value="PIX">Pix</option>
+            <option value="BOLETO">Boleto</option>
+            <option value="CARTAO_DEBITO">Cartão de Débito</option>
+            <option value="CARTAO_CREDITO">Cartão de Crédito</option>
           </select>
 
           <button type="submit" className="create-button" disabled={loading}>

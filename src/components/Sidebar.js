@@ -12,7 +12,7 @@ const Sidebar = ({ activePage, onNavigate, onNewTransaction }) => {
   const navItems = [
     { name: 'Dashboard', icon: FaChartPie, key: 'dashboard' },
     { name: 'Transações', icon: FaExchangeAlt, key: 'transacoes' },
-    { name: 'Categorias', icon: FaTags, key: 'categorias-list' }, // Renomeei para evitar conflito
+    // { name: 'Categorias', icon: FaTags, key: 'categorias-list' }, // Renomeei para evitar conflito
     { name: 'Relatório', icon: FaFileAlt, key: 'relatorio' },
   ];
 

@@ -1,23 +1,34 @@
 // src/pages/Telacategoria.js
 
 import React, { useState } from 'react';
-import { FaTimes, FaPencilAlt } from 'react-icons/fa';
+import { FaTimes, FaPencilAlt, FaTrashAlt } from 'react-icons/fa';
 
 const Telacategoria = ({ 
   onClose, 
   onEditCategory, 
-  onCreateNewCategory, 
+  onCreateNewCategory,
+  onDeleteCategory,
   categories = [] 
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const getBackgroundColor = (category) => {
-    return category.color || (category.type === 'receita' ? '#3CB371' : '#FF6347');
-  };
+  const isLightColor = (hex) => {
+     if (!hex || hex.length < 7) return false;
+     try {
+        const r = parseInt(hex.substring(1, 3), 16);
+        const g = parseInt(hex.substring(3, 5), 16);
+        const b = parseInt(hex.substring(5, 7), 16);
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance > 0.65;
+    } catch (e) {
+        return false;
+    }
+   };
+
 
   const filteredCategories = categories.filter(cat =>
-    cat.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+     cat && cat.nome && cat.nome.toLowerCase().includes(searchTerm.toLowerCase())
+   );
 
   return (
     <div className="form-modal-overlay">
@@ -40,24 +51,39 @@ const Telacategoria = ({
         <div className="category-list-section">
           <h3>Categorias</h3>
 
-          {filteredCategories.map((category) => (
-            <div key={category.id} className="category-item-display">
-              <span
-                className="category-name-tag"
-                style={{ backgroundColor: getBackgroundColor(category), color: 'white' }}
-              >
-                {category.name}
-              </span>
+          {filteredCategories.map((category) => {
+            // 3. CORREÇÃO: Lendo 'cor' (do backend) e calculando o 'textColor'
+            const categoryColor = category.cor || '#0047AB'; // Pega a cor do DTO
+            const textColor = isLightColor(categoryColor) ? '#333' : 'white';
 
-              <button
-                className="edit-icon-button"
-                onClick={() => onEditCategory(category)}
-                title="Editar"
-              >
-                <FaPencilAlt />
-              </button>
-            </div>
-          ))}
+            return (
+               <div key={category.id} className="category-item-display">
+                  <span
+                    className="category-name-tag"
+                    style={{ backgroundColor: categoryColor, color: textColor }} // <- Corrigido
+                  >
+                    {/* 4. CORREÇÃO: Lendo 'nome' (do backend) */}
+                    {category.nome} 
+                  </span>
+
+                  <button
+                    className="edit-icon-button"
+                    onClick={() => onEditCategory(category)} // Isso já estava correto
+                    title="Editar"
+                  >
+                    <FaPencilAlt />
+                  </button>
+
+                  <button
+                    className="delete-icon-button" // (Use o CSS do seu action-button)
+                    onClick={() => onDeleteCategory(category.id)}
+                    title="Excluir"
+                  >
+                      <FaTrashAlt />
+                  </button>
+               </div>
+            );
+          })}
 
           {filteredCategories.length === 0 && (
             <p className="no-data-message">Nenhuma categoria encontrada.</p>

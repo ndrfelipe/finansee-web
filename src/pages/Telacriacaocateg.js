@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaTimes, FaArrowLeft } from 'react-icons/fa';
+import { FaTimes, FaArrowLeft, FaTrashAlt } from 'react-icons/fa';
 
 const COLOR_OPTIONS = [
   '#FF6347', '#4682B4', '#3CB371', '#9370DB',
@@ -24,16 +24,21 @@ const Telacriacaocateg = ({
 
   useEffect(() => {
     if (categoryToEdit && categoryToEdit.id) {
-      setFormData(categoryToEdit);
+      setFormData({
+        id: categoryToEdit.id,
+        nome: categoryToEdit.nome,
+        tipo: categoryToEdit.tipo.toLowerCase(),
+        cor: categoryToEdit.cor
+      });
       setIsEditing(true);
     } else {
       setFormData({
-        id: null,
-        name: '',
-        color: COLOR_OPTIONS[0],
-        type: 'despesa'
-      });
-      setIsEditing(false);
+          id: null,
+          name: '',
+          color: COLOR_OPTIONS[0],
+          type: 'despesa'
+        });
+        setIsEditing(false);
     }
   }, [categoryToEdit]);
 

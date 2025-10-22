@@ -10,13 +10,17 @@ import Telacriacaodesp from './Telacriacaodesp';
 import Telacriacaoreceita from './Telacriacaoreceita'; 
 import Telacategoria from './Telacategoria'; 
 import Telacriacaocateg from './Telacriacaocateg'; 
+import Telaexcluirdr from './Telaexcluirdr';
+
 import { 
     deleteTransaction, 
     getTransactions, 
-    getCategoriesMock, 
-    updateCategoryMock, 
-    createCategoryMock 
-} from '../services/mockApi'; 
+    getCategories,      // <- NOVO
+    updateCategory,     // <- NOVO
+    createCategory,     // <- NOVO
+    deleteCategory      // <- NOVO (para o futuro)
+} from '../services/apiService'; // Aponta para o seu novo arquivo de API
+
 
 const Telatransacoes = () => {
     const navigate = useNavigate();
@@ -28,12 +32,14 @@ const Telatransacoes = () => {
     const [notification, setNotification] = useState(null);
     const [modalType, setModalType] = useState(null); 
     
-    // ESTADOS DE EDIÇÃO E NAVEGAÇÃO
+    // ESTADOS DE EDIÇÃO E NAVEGAÇÃO    
     const [transactionToEdit, setTransactionToEdit] = useState(null); 
     const [categoryToEdit, setCategoryToEdit] = useState(null); 
     const [showCategoryDetails, setShowCategoryDetails] = useState(false);
     const [currentPage] = useState('transacoes');
     const [currentMonth, setCurrentMonth] = useState('Setembro 2025');
+
+    const [transactionToDelete, setTransactionToDelete] = useState(null);
 
     // --- FUNÇÕES DE NAVEGAÇÃO ---
     const handleNavigate = (key) => {
@@ -55,10 +61,43 @@ const Telatransacoes = () => {
         }
     };
 
+    const handleDeleteClick = (transaction) => { 
+        setTransactionToDelete(transaction); // Guarda a transação que queremos deletar
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!transactionToDelete) return; // Segurança
+
+        try { 
+            // Usa a função do apiService que já criamos
+            await deleteTransaction(transactionToDelete); 
+            setNotification({ type: 'success', message: 'Transação excluída com sucesso!' }); 
+            fetchData(); // Atualiza a lista
+        } catch (error) { 
+            setNotification({ type: 'error', message: error.message || 'Falha ao excluir a transação.' }); 
+        } finally {
+            setTransactionToDelete(null); // Fecha o modal
+        }
+    };
+
+    // 6. CRIE A FUNÇÃO DE CANCELAMENTO (QUE SERÁ PASSADA PARA O MODAL)
+    const handleCancelDelete = () => {
+        setTransactionToDelete(null); // Apenas fecha o modal
+    };
+
+    const handleCloseModal = () => { 
+        setModalType(null); 
+        setTransactionToEdit(null); 
+        setCategoryToEdit(null); 
+        setShowCategoryDetails(false); 
+        // Também garanta que o modal de delete feche se outro for aberto
+        setTransactionToDelete(null); 
+    };
+
     // --- FUNÇÕES DE CARREGAMENTO ---
     const fetchCategories = async () => {
         try {
-            const data = await getCategoriesMock(); 
+            const data = await getCategories(); 
             setCategories(data);
         } catch (err) {
             console.error("Falha ao carregar categorias:", err);
@@ -91,11 +130,15 @@ const Telatransacoes = () => {
         return { receitas: totalReceitas, despesas: totalDespesas, saldoAtual: saldo };
     }, [transactions]);
     
-    const categoryColors = useMemo(() => {
-        return categories.reduce((acc, cat) => {
-            acc[cat.name] = cat.color;
-            return acc;
-        }, {});
+    const { despesaCategories, receitaCategories } = useMemo(() => {
+        if (!categories) {
+            return { despesaCategories: [], receitaCategories: [] };
+        }
+        
+        const despesas = categories.filter(c => c.tipo.toUpperCase() === 'DESPESA');
+        const receitas = categories.filter(c => c.tipo.toUpperCase() === 'RECEITA');
+        
+        return { despesaCategories: despesas, receitaCategories: receitas };
     }, [categories]);
 
     // --- HANDLERS ---
@@ -118,20 +161,13 @@ const Telatransacoes = () => {
     const handleDelete = async (transaction) => { 
         if (window.confirm(`Tem certeza que deseja excluir a transação de R$${Math.abs(transaction.valor).toFixed(2).replace('.', ',')} - "${transaction.description}"?`)) { 
             try { 
-                await deleteTransaction(transaction.id); 
+                await deleteTransaction(transaction); 
                 setNotification({ type: 'success', message: 'Transação excluída com sucesso!' }); 
                 fetchData(); 
             } catch (error) { 
                 setNotification({ type: 'error', message: error.message || 'Falha ao excluir a transação.' }); 
             } 
         } 
-    };
-
-    const handleCloseModal = () => { 
-        setModalType(null); 
-        setTransactionToEdit(null); 
-        setCategoryToEdit(null); 
-        setShowCategoryDetails(false); 
     };
 
     const handleEditCategory = (category) => { 
@@ -148,9 +184,9 @@ const Telatransacoes = () => {
         setNotification(null);
         try {
             if (savedCategory.id) {
-                await updateCategoryMock(savedCategory);
+                await updateCategory(savedCategory);
             } else {
-                await createCategoryMock(savedCategory);
+                await createCategory(savedCategory);
             }
             await fetchCategories();
             setCategoryToEdit(null); 
@@ -162,7 +198,27 @@ const Telatransacoes = () => {
         }
     };
 
-    if (loading) return <div className="loading-spinner">Carregando transações...</div>;
+    const handleDeleteCategory = async (categoryId) => {
+        if (!window.confirm("Tem certeza que deseja excluir esta categoria?")) {
+            return;
+        }
+        
+        setNotification(null); // Limpa notificações antigas
+        try {
+            await deleteCategory(categoryId);
+            
+            setNotification({ type: 'success', message: 'Categoria excluída com sucesso!' });
+            
+            // 3. Atualiza a lista de categorias na tela
+            fetchCategories(); // (Esta é a sua função que chama getCategories)
+            
+        } catch (error) {
+            console.error("Erro ao excluir categoria:", error);
+            setNotification({ type: 'error', message: error.message });
+        }
+    };
+
+    if (loading) return <div className="loading-spinner">Entrando no sistema...</div>;
 
     // --- RENDERIZAÇÃO ---
     return (
@@ -179,6 +235,8 @@ const Telatransacoes = () => {
                         {notification.message}
                     </div>
                 )}
+
+                
                 
                 {(modalType === 'despesa' || modalType === 'receita') && (
                     modalType === 'despesa' ? 
@@ -186,14 +244,14 @@ const Telatransacoes = () => {
                             transactionToEdit={transactionToEdit} 
                             onClose={handleCloseModal} 
                             onSaveSuccess={fetchData} 
-                            categories={categories}
+                            categories={despesaCategories}
                         /> 
                         :
                         <Telacriacaoreceita 
                             transactionToEdit={transactionToEdit} 
                             onClose={handleCloseModal} 
                             onSaveSuccess={fetchData} 
-                            categories={categories}
+                            categories={receitaCategories}
                         /> 
                 )}
                 
@@ -203,6 +261,7 @@ const Telatransacoes = () => {
                         onEditCategory={handleEditCategory}
                         onCreateNewCategory={handleCreateNewCategory}
                         categories={categories} 
+                        onDeleteCategory={handleDeleteCategory}
                     />
                 )}
                 
@@ -218,6 +277,13 @@ const Telatransacoes = () => {
                     />
                 )}
                 
+                {transactionToDelete && (
+                    <Telaexcluirdr
+                        onConfirm={handleConfirmDelete}
+                        onCancel={handleCancelDelete}
+                    />
+                )}
+
                 <div className="transactions-header-section">
                     <h1>Transações</h1>
                     <div className="table-wrapper-card">
@@ -228,9 +294,8 @@ const Telatransacoes = () => {
                         />
                         <TransactionList 
                             transactions={transactions} 
-                            onDelete={handleDelete} 
+                            onDelete={handleDeleteClick} 
                             onEdit={handleEdit} 
-                            categoryColors={categoryColors}
                         />
                     </div>
                 </div>
