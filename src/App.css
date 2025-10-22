@@ -863,3 +863,74 @@ label {
         padding-left: 0;
     }
 }
+
+/* ====================================================================== */
+/* === 12. SEÇÃO DE FILTROS (TelaTransacoes.js) ========================= */
+/* ====================================================================== */
+
+/* Seção de filtros */
+.filters-section {
+  margin-bottom: 2rem;
+}
+
+.filters-section h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0047AB;
+  margin-bottom: 1rem;
+}
+
+/* Container dos campos */
+.filters-section > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Estilo geral para inputs e selects */
+.filters-section select,
+.filters-section input[type="date"],
+.filters-section input[type="number"] {
+  padding: 0.9rem 1rem;
+  border: 1px solid #d0d7e2;
+  border-radius: 12px;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #333;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  min-width: 160px;
+  flex: 1;
+}
+
+/* Foco elegante */
+.filters-section input:focus,
+.filters-section select:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.12);
+}
+
+/* Placeholder suave */
+.filters-section input::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+/* Botão de limpar filtros */
+.filters-section button {
+  padding: 0.8rem 1.2rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.filters-section button:hover {
+  background-color: #0056b3;
+}
