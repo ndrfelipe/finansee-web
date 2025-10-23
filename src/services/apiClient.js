@@ -1,9 +1,7 @@
 import axios from "axios";
 
-// https://finansee-production.up.railway.app
-
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8080/api', 
+  baseURL: 'https://finansee-production.up.railway.app/api', 
   headers: {
     'Content-Type': 'application/json',
   },
