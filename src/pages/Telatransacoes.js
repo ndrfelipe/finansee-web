@@ -289,36 +289,63 @@ const Telatransacoes = () => {
 
                 <div className="filters-section" style={{ marginBottom: '20px' }}>
                     <h2>Filtrar Transações</h2>
-                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'flex-end', width: '100%' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '1rem', fontWeight: '500' }}>Categoria:</span>
                         <select
-                            value={filters.categoria}
-                            onChange={e => setFilters({ ...filters, categoria: e.target.value })}
+                        value={filters.categoria}
+                        onChange={e => setFilters({ ...filters, categoria: e.target.value })}
                         >
-                            <option value="">Todas as Categorias</option>
-                            {categories.map(cat => (
-                                <option key={cat.id} value={cat.name}>{cat.name}</option>
-                            ))}
+                        <option value="">Todas as Categorias</option>
+                        {categories.map(cat => (
+                            <option key={cat.id} value={cat.name}>
+                            {cat.name}
+                            </option>
+                        ))}
                         </select>
-
-                        <input type="date" value={filters.dataInicio}
-                            onChange={e => setFilters({ ...filters, dataInicio: e.target.value })}
-                        />
-                        <input type="date" value={filters.dataFim}
-                            onChange={e => setFilters({ ...filters, dataFim: e.target.value })}
-                        />
-
-                        <input type="number" placeholder="Valor mínimo"
-                            value={filters.valorMin}
-                            onChange={e => setFilters({ ...filters, valorMin: e.target.value })}
-                        />
-                        <input type="number" placeholder="Valor máximo"
-                            value={filters.valorMax}
-                            onChange={e => setFilters({ ...filters, valorMax: e.target.value })}
-                        />
-
-                        <button onClick={handleClearFilters}>Limpar filtros</button>
                     </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '1rem', fontWeight: '500' }}>Data de Início:</span>
+                        <input
+                        type="date"
+                        value={filters.dataInicio}
+                        onChange={e => setFilters({ ...filters, dataInicio: e.target.value })}
+                        />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '1rem', fontWeight: '500' }}>Data de Fim:</span>
+                        <input
+                        type="date"
+                        value={filters.dataFim}
+                        onChange={e => setFilters({ ...filters, dataFim: e.target.value })}
+                        />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '1rem', fontWeight: '500' }}>Valor mínimo:</span>
+                        <input
+                        type="number"
+                        placeholder="0"
+                        value={filters.valorMin}
+                        onChange={e => setFilters({ ...filters, valorMin: e.target.value })}
+                        />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '1rem', fontWeight: '500' }}>Valor máximo:</span>
+                        <input
+                        type="number"
+                        placeholder="0"
+                        value={filters.valorMax}
+                        onChange={e => setFilters({ ...filters, valorMax: e.target.value })}
+                        />
+                    </div>
+
+                    <button onClick={handleClearFilters}>Limpar filtros</button>
                 </div>
+            </div>
 
                 <div className="transactions-header-section">
                     <h1>Transações</h1>
