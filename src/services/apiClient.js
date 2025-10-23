@@ -17,7 +17,7 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Retorna a configuração modificada para que a requisição possa continuar
+    // Retorna a configuração modcdificada para que a requisição possa continuar
     return config;
   },
   (error) => {

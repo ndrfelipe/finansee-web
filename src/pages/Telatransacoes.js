@@ -340,7 +340,7 @@ const Telatransacoes = () => {
                     saldoAtual={saldoAtual}
                     receitas={receitas}
                     despesas={despesas}
-                />
+                /> 
             </div>
         </div>
     );
