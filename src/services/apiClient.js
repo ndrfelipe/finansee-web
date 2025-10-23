@@ -1,7 +1,9 @@
 import axios from "axios";
 
+// https://finansee-production.up.railway.app
+
 const apiClient = axios.create({
-  baseURL: 'https://finansee-production.up.railway.app/api', 
+  baseURL: 'http://localhost:8080/api', 
   headers: {
     'Content-Type': 'application/json',
   },
@@ -17,7 +19,7 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Retorna a configuração modcdificada para que a requisição possa continuar
+    // Retorna a configuração modificada para que a requisição possa continuar
     return config;
   },
   (error) => {

@@ -1,16 +1,17 @@
 // src/pages/Telatransacoes.js
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import SummaryCards from '../components/SummaryCards';
-import MonthSelector from '../components/MonthSelector';
+// import MonthSelector from '../components/MonthSelector';
 import TransactionList from '../components/TransactionList';
 import Telacriacaodesp from './Telacriacaodesp'; 
 import Telacriacaoreceita from './Telacriacaoreceita'; 
 import Telacategoria from './Telacategoria'; 
 import Telacriacaocateg from './Telacriacaocateg'; 
 import Telaexcluirdr from './Telaexcluirdr';
+import './filters-container.css';
 
 import { 
     deleteTransaction, 
@@ -21,13 +22,113 @@ import {
     deleteCategory      
 } from '../services/apiService'; 
 
+const Filters = ({ categories, filters, onFilterChange, onApplyFilters, onClearFilters, loading }) => {
+    return (
+        // O container principal usa a classe CSS
+        <div className='filters-container'> 
+            
+            {/* Grupo: Tipo */}
+            <div className="filter-group"> {/* Adiciona classe para o grupo */}
+                <span className="filter-label">Tipo:</span> {/* Adiciona classe para o label */}
+                <select 
+                    name="tipo" 
+                    value={filters.tipo || ''} 
+                    onChange={onFilterChange}
+                    className="styled-select" // Remove 'filter-select' se não for mais necessário
+                
+                >
+                    <option value="">Todos</option>
+                    <option value="RECEITA">Receitas</option>
+                    <option value="DESPESA">Despesas</option>
+                </select>
+            </div>
+
+            {/* Grupo: Categoria */}
+            <div className="filter-group">
+                <span className="filter-label">Categoria:</span>
+                <select
+                    name='categoriaId'
+                    value={filters.categoriaId || ''}
+                    onChange={onFilterChange}
+                    className="styled-select" 
+                
+                >
+                    <option value="">Todas</option>
+                    {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>
+                            {cat.nome}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            {/* Grupo: Data Início */}
+            <div className="filter-group">
+                <span className="filter-label">De:</span> {/* Texto mais curto */}
+                <input
+                    type="date"
+                    name='dataInicio'
+                    value={filters.dataInicio || ''}
+                    onChange={onFilterChange}
+                    className="styled-input" 
+                
+                />
+            </div>
+
+            {/* Grupo: Data Fim */}
+            <div className="filter-group">
+                <span className="filter-label">Até:</span> {/* Texto mais curto */}
+                <input
+                    type="date"
+                    name='dataFim'
+                    value={filters.dataFim || ''}
+                    onChange={onFilterChange}
+                    className="styled-input" 
+                
+                />
+            </div>
+
+            <div className="filter-group">
+                        <span className="filter-label">Valor mínimo:</span>
+                        <input
+                        type="number"
+                        name='valorMin'
+                        placeholder="0"
+                        value={filters.valorMin || ''}
+                        onChange={onFilterChange}
+                        className="styled-input"
+                        />
+                    </div>
+
+                    <div className="filter-group">
+                        <span className="filter-label">Valor máximo:</span>
+                        <input
+                        type="number"
+                        name='valorMax'
+                        placeholder="0"
+                        value={filters.valorMax || ''}
+                        onChange={onFilterChange}
+                        className="styled-input"
+                        />
+                    </div>
+
+            {/* Botões ficam diretamente no container flex */}
+            <button onClick={onApplyFilters} className="filter-button apply-button">
+                 {loading ? 'Filtrando...' : 'Filtrar'}
+            </button>
+            <button onClick={onClearFilters} className="filter-button clear-button">
+                Limpar
+            </button>
+        </div>
+    );
+}
+
 
 const Telatransacoes = () => {
     const navigate = useNavigate();
 
     // ESTADOS PRINCIPAIS
     const [transactions, setTransactions] = useState([]);
-    const [filteredTransactions, setFilteredTransactions] = useState([]); 
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [notification, setNotification] = useState(null);
@@ -35,7 +136,8 @@ const Telatransacoes = () => {
 
     // FILTROS
     const [filters, setFilters] = useState({
-        categoria: "",
+        tipo: "",
+        categoriaId: "",
         dataInicio: "",
         dataFim: "",
         valorMin: "",
@@ -47,7 +149,6 @@ const Telatransacoes = () => {
     const [categoryToEdit, setCategoryToEdit] = useState(null);
     const [showCategoryDetails, setShowCategoryDetails] = useState(false);
     const [currentPage] = useState('transacoes');
-    const [currentMonth, setCurrentMonth] = useState('Setembro 2025');
     const [transactionToDelete, setTransactionToDelete] = useState(null);
 
     // --- FUNÇÕES DE NAVEGAÇÃO ---
@@ -94,49 +195,40 @@ const Telatransacoes = () => {
         }
     };
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async (currentFilters) => {
         setLoading(true);
+        setNotification(null);
+        // Usa os filtros passados ou o estado atual se nenhum for passado
+        const filtersToUse = currentFilters || filters; 
         try {
-            const data = await getTransactions();
+            const filterParams = {
+                tipo: filtersToUse.tipo || null,
+                categoriaId: filtersToUse.categoriaId || null,
+                dataInicio: filtersToUse.dataInicio || null,
+                dataFim: filtersToUse.dataFim || null,
+                valorMin: filtersToUse.valorMin || null,
+                valorMax: filtersToUse.valorMax || null
+            };
+            Object.keys(filterParams).forEach(key =>
+                filterParams[key] == null && delete filterParams[key]
+            );
+            console.log("Fetching data with filters:", filterParams);
+            const data = await getTransactions(filterParams);
             setTransactions(data);
-            setFilteredTransactions(data);
-        } catch (err) {
-            setNotification({ type: 'error', message: 'Falha ao carregar as transações.' });
-        } finally {
-            setLoading(false);
-        }
-    };
+        } catch (err) { 
+            console.error("Erro ao buscar transações:", err); // Log mais detalhado
+            setNotification({ type: 'error', message: 'Falha ao carregar as transações.' }); 
+        } finally { 
+            setLoading(false); 
+        } 
+    }, [filters]);
 
     useEffect(() => {
-        fetchData();
         fetchCategories();
+        fetchData();
     }, []);
 
-    // --- LÓGICA DE FILTRO ---
-    useEffect(() => {
-        let resultado = [...transactions];
-
-        if (filters.categoria) {
-            resultado = resultado.filter(t => t.categoria?.toLowerCase() === filters.categoria.toLowerCase());
-        }
-
-        if (filters.dataInicio && filters.dataFim) {
-            resultado = resultado.filter(t => {
-                const dataTransacao = new Date(t.data);
-                return dataTransacao >= new Date(filters.dataInicio) && dataTransacao <= new Date(filters.dataFim);
-            });
-        }
-
-        if (filters.valorMin) {
-            resultado = resultado.filter(t => t.valor >= parseFloat(filters.valorMin));
-        }
-
-        if (filters.valorMax) {
-            resultado = resultado.filter(t => t.valor <= parseFloat(filters.valorMax));
-        }
-
-        setFilteredTransactions(resultado);
-    }, [filters, transactions]);
+    
 
     // --- MEMORIZAÇÃO E CÁLCULOS ---
     const { receitas, despesas, saldoAtual } = useMemo(() => {
@@ -154,6 +246,25 @@ const Telatransacoes = () => {
     }, [categories]);
 
     // --- HANDLERS ---
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setFilters(prevFilters => ({
+            ...prevFilters,
+            [name]: value // Guarda o valor (string vazia se limpo)
+        }));
+    };
+
+    const handleApplyFilters = () => {
+        fetchData(); // Chama a busca com os filtros atuais no estado 'filters'
+    };
+    
+    // Handler para limpar filtros
+    const handleClearFilters = () => {
+        const clearedFilters = {tipo: "", categoriaId: "", dataInicio: "", dataFim: "", valorMin: "", valorMax: "" };
+        setFilters(clearedFilters);
+        fetchData(clearedFilters);
+    };
+
     const handleNewTransaction = (type) => {
         setTransactionToEdit(null);
         setCategoryToEdit(null);
@@ -217,10 +328,7 @@ const Telatransacoes = () => {
         }
     };
 
-    const handleClearFilters = () => {
-        setFilters({ categoria: "", dataInicio: "", dataFim: "", valorMin: "", valorMax: "" });
-        setFilteredTransactions(transactions);
-    };
+    
 
     if (loading) return <div className="loading-spinner">Entrando no sistema...</div>;
 
@@ -287,76 +395,25 @@ const Telatransacoes = () => {
                     />
                 )}
 
+                {/* Seção de Filtros */}
                 <div className="filters-section" style={{ marginBottom: '20px' }}>
                     <h2>Filtrar Transações</h2>
-                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'flex-end', width: '100%' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '1rem', fontWeight: '500' }}>Categoria:</span>
-                        <select
-                        value={filters.categoria}
-                        onChange={e => setFilters({ ...filters, categoria: e.target.value })}
-                        >
-                        <option value="">Todas as Categorias</option>
-                        {categories.map(cat => (
-                            <option key={cat.id} value={cat.name}>
-                            {cat.name}
-                            </option>
-                        ))}
-                        </select>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '1rem', fontWeight: '500' }}>Data de Início:</span>
-                        <input
-                        type="date"
-                        value={filters.dataInicio}
-                        onChange={e => setFilters({ ...filters, dataInicio: e.target.value })}
-                        />
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '1rem', fontWeight: '500' }}>Data de Fim:</span>
-                        <input
-                        type="date"
-                        value={filters.dataFim}
-                        onChange={e => setFilters({ ...filters, dataFim: e.target.value })}
-                        />
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '1rem', fontWeight: '500' }}>Valor mínimo:</span>
-                        <input
-                        type="number"
-                        placeholder="0"
-                        value={filters.valorMin}
-                        onChange={e => setFilters({ ...filters, valorMin: e.target.value })}
-                        />
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '1rem', fontWeight: '500' }}>Valor máximo:</span>
-                        <input
-                        type="number"
-                        placeholder="0"
-                        value={filters.valorMax}
-                        onChange={e => setFilters({ ...filters, valorMax: e.target.value })}
-                        />
-                    </div>
-
-                    <button onClick={handleClearFilters}>Limpar filtros</button>
+                    {/* 8. Passa as NOVAS funções para o componente Filters */}
+                    <Filters 
+                        categories={categories} 
+                        filters={filters}
+                        onFilterChange={handleFilterChange}
+                        onApplyFilters={handleApplyFilters} // <-- Usa a função do botão
+                        onClearFilters={handleClearFilters} // <-- Usa a função do botão Limpar
+                    />
                 </div>
-            </div>
 
                 <div className="transactions-header-section">
                     <h1>Transações</h1>
                     <div className="table-wrapper-card">
-                        <MonthSelector
-                            currentMonth={currentMonth}
-                            onPrevious={() => setCurrentMonth('Agosto 2025')}
-                            onNext={() => setCurrentMonth('Outubro 2025')}
-                        />
+                        
                         <TransactionList
-                            transactions={filteredTransactions}
+                            transactions={transactions}
                             onDelete={handleDeleteClick}
                             onEdit={handleEdit}
                         />

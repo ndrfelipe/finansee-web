@@ -1,0 +1,63 @@
+.filters-container {
+    display: flex; /* Garante que os itens internos fiquem em linha */
+    flex-wrap: nowrap; /* IMPEDE a quebra de linha */
+    gap: 15px; /* Aumenta um pouco o espaço entre os filtros */
+    margin-bottom: 20px; 
+    padding: 15px; /* Um pouco mais de respiro interno */
+    background-color: #f9f9f9; 
+    border-radius: 8px; /* Cantos um pouco mais arredondados */
+    align-items: center; /* Alinha os itens pela base (útil se as alturas variarem) */
+    
+    /* Para telas muito pequenas, permite rolar horizontalmente */
+    overflow-x: auto; 
+    /* Adiciona um preenchimento mínimo para evitar que o scrollbar cole nos elementos */
+    padding-bottom: 10px; 
+}
+
+/* Estilos para os GRUPOS de filtro (label + input) */
+.filter-group { 
+    display: flex;
+    flex-direction: column; /* Label acima do input */
+    gap: 5px; /* Espaço entre label e input */
+}
+
+/* Estilos para os LABELS */
+.filter-label {
+    font-size: 0.9rem; /* Um pouco menor */
+    font-weight: 500;
+    color: #555; /* Cor um pouco mais suave */
+    white-space: nowrap; /* Impede que o texto do label quebre linha */
+}
+
+/* Estilos gerais para inputs e selects (adapte se já tiver) */
+.styled-select, .styled-input {
+    padding: 1rem 2.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    min-width: 120px; /* Garante uma largura mínima */
+}
+
+.styled-input[type="date"] {
+    min-width: 140px; 
+}
+.styled-input[type="number"] {
+    min-width: 100px;
+    max-width: 120px; /* Limita um pouco a largura máxima */
+}
+
+
+/* Estilos para os botões (adapte se já tiver) */
+.filter-button { 
+    margin-left: 0.3rem; 
+    padding: 1rem 2.5rem; 
+    cursor: pointer; 
+    border: none; 
+    border-radius: 4px;
+    white-space: nowrap; /* Impede que o texto do botão quebre */
+    height: 38px; /* Altura similar aos inputs */
+} 
+.apply-button { background-color: #007bff; color: white; }
+.clear-button { background-color: #6c757d; color: white; }
+.apply-button:hover { background-color: #0056b3; }
+.clear-button:hover { background-color: #5a6268; }
