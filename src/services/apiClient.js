@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // railway_backend_url = 'https://finansee-production.up.railway.app/api'
-const azure_backend_url   = 'finansee-bmgbajegc7dhcdbv.eastus2-01.azurewebsites.net'
+const azure_backend_url   = 'finansee-bmgbajegc7dhcdbv.eastus2-01.azurewebsites.net/api'
 
 const apiClient = axios.create({
   baseURL: azure_backend_url, 
