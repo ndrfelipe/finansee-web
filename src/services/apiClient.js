@@ -1,7 +1,10 @@
 import axios from "axios";
 
+railway_backend_url = 'https://finansee-production.up.railway.app/api'
+azure_backend_url   = 'finansee-bmgbajegc7dhcdbv.eastus2-01.azurewebsites.net'
+
 const apiClient = axios.create({
-  baseURL: 'https://finansee-production.up.railway.app/api', 
+  baseURL: azure_backend_url, 
   headers: {
     'Content-Type': 'application/json',
   },
